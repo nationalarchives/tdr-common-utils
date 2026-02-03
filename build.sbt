@@ -5,14 +5,17 @@ import sbtrelease.ReleaseStateTransformations.*
 import java.net.URI
 
 lazy val commonSettings = Seq(
-  libraryDependencies ++= Seq(),
+  libraryDependencies ++= Seq(
+    scalaTest % Test,
+    mockito % Test,
+  ),
   scalaVersion := "2.13.18",
   version := version.value,
   organization := "uk.gov.nationalarchives",
 
   scmInfo := Some(
     ScmInfo(
-      url("https://github.com/nationalarchives/tdr-aws-utils"),
+      url("https://github.com/nationalarchives/tdr-common-utils"),
       "git@github.com:nationalarchives/tdr-common-utils"
     )
   ),
@@ -21,7 +24,7 @@ lazy val commonSettings = Seq(
       id = "tna-da-bot",
       name = "TNA Digital Archiving",
       email = "181243999+tna-da-bot@users.noreply.github.com",
-      url = url("https://github.com/nationalarchives/tdr-aws-utils")
+      url = url("https://github.com/nationalarchives/tdr-common-utils")
     )
   ),
 
@@ -51,3 +54,17 @@ lazy val commonSettings = Seq(
     pushChanges
   )
 )
+
+lazy val statuses = (project in file("statuses"))
+  .settings(commonSettings).settings(
+    name := "status",
+    description := "A project containing TDR statuses",
+    libraryDependencies ++= Seq()
+  )
+
+lazy val root = (project in file("."))
+  .settings(commonSettings)
+  .settings(
+    name := "tdr-common-utils",
+    publish / skip := true
+  ).aggregate(statuses)
