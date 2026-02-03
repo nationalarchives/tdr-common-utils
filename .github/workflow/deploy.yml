@@ -1,0 +1,15 @@
+name: TDR Deploy Common Utils
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: nationalarchives/tdr-github-actions/.github/workflows/sbt_release.yml@5d4fee21ed08f053613a7706e28623c0adc0f5f4 # v0.0.10
+    with:
+      library-name: "Common utils"
+    secrets:
+      WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
