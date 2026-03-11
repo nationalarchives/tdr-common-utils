@@ -20,6 +20,10 @@ class StatusTypesSpec extends AnyWordSpec with MockitoSugar {
       DraftMetadataType.nonJudgmentStatus shouldBe true
       DraftMetadataType.fileCheckStatus shouldBe false
 
+      DraftMetadataUploadType.id should equal("DraftMetadataUpload")
+      DraftMetadataUploadType.nonJudgmentStatus shouldBe true
+      DraftMetadataUploadType.fileCheckStatus shouldBe false
+
       ExportType.id should equal("Export")
       ExportType.nonJudgmentStatus shouldBe false
       ExportType.fileCheckStatus shouldBe false
