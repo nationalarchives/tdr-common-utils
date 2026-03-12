@@ -57,7 +57,7 @@ lazy val commonSettings = Seq(
 
 lazy val statuses = (project in file("statuses"))
   .settings(commonSettings).settings(
-    name := "status",
+    name := "tdr-statuses",
     description := "A project containing TDR statuses",
     libraryDependencies ++= Seq()
   )
