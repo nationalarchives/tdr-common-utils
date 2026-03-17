@@ -62,9 +62,16 @@ lazy val statuses = (project in file("statuses"))
     libraryDependencies ++= Seq()
   )
 
+lazy val objectKeyContext = (project in file("objectkeycontext"))
+  .settings(commonSettings).settings(
+    name := "tdr-object-key-context",
+    description := "A project contain TDR object context",
+    libraryDependencies ++= Seq()
+  )
+
 lazy val root = (project in file("."))
   .settings(commonSettings)
   .settings(
     name := "tdr-common-utils",
     publish / skip := true
-  ).aggregate(statuses)
+  ).aggregate(statuses, objectKeyContext)
