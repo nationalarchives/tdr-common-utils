@@ -16,9 +16,9 @@ class ContextSpec extends AnyWordSpec with MockitoSugar {
       val objectName = s"${UUID.randomUUID()}.${ObjectTypes.Metadata.id}"
       val result = Context.objectKeyParser(s"$transferId/$objectName")
 
-      result.objectType shouldBe Metadata
+      result.objectType.get shouldBe Metadata
       result.transferId shouldEqual transferId
-      result.objectName shouldEqual objectName
+      result.objectName.get shouldEqual objectName
       result.userId shouldBe None
       result.category shouldBe None
       result.assetSource shouldBe None
@@ -33,11 +33,26 @@ class ContextSpec extends AnyWordSpec with MockitoSugar {
       val result = Context.objectKeyParser(s"$userId/$assetSource/$transferId/$objectCategory/$objectName")
 
       result.userId.get shouldEqual userId
-      result.objectName shouldEqual objectName
+      result.objectName.get shouldEqual objectName
       result.transferId shouldEqual transferId
       result.assetSource.get shouldBe SharePoint
       result.category.get shouldBe ObjectCategories.Metadata
-      result.objectType shouldBe ObjectTypes.Metadata
+      result.objectType.get shouldBe ObjectTypes.Metadata
+    }
+
+    "return the correct context where key is for uploaded object prefix" in {
+      val userId = UUID.randomUUID()
+      val assetSource = SharePoint.id
+      val transferId = UUID.randomUUID()
+      val objectCategory = ObjectCategories.Metadata.id
+      val result = Context.objectKeyParser(s"$userId/$assetSource/$transferId/$objectCategory")
+
+      result.userId.get shouldEqual userId
+      result.objectName shouldEqual None
+      result.transferId shouldEqual transferId
+      result.assetSource.get shouldBe SharePoint
+      result.category.get shouldBe ObjectCategories.Metadata
+      result.objectType shouldBe None
     }
 
     "return an exception for a malformed object key" in {

@@ -5,6 +5,10 @@ object ObjectCategories {
     val id: String
   }
 
+  case object DryRunMetadata extends ObjectCategory {
+    val id: String = "dryrunmetadata"
+  }
+
   case object Metadata extends ObjectCategory {
     val id: String = "metadata"
   }
@@ -15,9 +19,10 @@ object ObjectCategories {
 
   def toObjectCategory(objectCategory: String): ObjectCategory = {
     objectCategory match {
-      case Metadata.id => Metadata
-      case Records.id  => Records
-      case _           => throw new RuntimeException(s"Invalid object category: $objectCategory")
+      case DryRunMetadata.id => DryRunMetadata
+      case Metadata.id       => Metadata
+      case Records.id        => Records
+      case _                 => throw new RuntimeException(s"Invalid object category: $objectCategory")
     }
   }
 }

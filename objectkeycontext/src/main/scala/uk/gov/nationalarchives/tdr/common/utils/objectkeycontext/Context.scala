@@ -13,8 +13,8 @@ object Context {
                                transferId: UUID,
                                assetSource: Option[AssetSource] = None,
                                category: Option[ObjectCategory] = None,
-                               objectType: ObjectType,
-                               objectName: String
+                               objectType: Option[ObjectType] = None,
+                               objectName: Option[String] = None
                              )
 
   private def getObjectType(element: String): ObjectType = {
@@ -23,12 +23,16 @@ object Context {
     } else Record
   }
 
+  private def isPrefixKey(elements: List[String]): Boolean = {
+    elements.size == 4
+  }
+
   private def defaultObjectKeyParser(elements: List[String], objectKey: String): ObjectKeyContext = {
     Try {
       val objectName = elements.last
       val objectType = getObjectType(objectName)
       val transferId = UUID.fromString(elements.head)
-      ObjectKeyContext(transferId = transferId, objectType = objectType, objectName = objectName)
+      ObjectKeyContext(transferId = transferId, objectType = Some(objectType), objectName = Some(objectName))
     } match {
       case Failure(ex)               => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
       case Success(objectKeyContext) => objectKeyContext
@@ -37,8 +41,9 @@ object Context {
 
   private def uploadObjectKeyParser(elements: List[String], objectKey: String): ObjectKeyContext = {
     Try {
-      val objectName = elements.last
-      val objectType = getObjectType(objectName)
+      val prefixKey = isPrefixKey(elements)
+      val objectName = if (prefixKey) None else Some(elements.last)
+      val objectType = if (prefixKey) None else Some(getObjectType(objectName.get))
       val objectCategory = ObjectCategories.toObjectCategory(elements(3))
       val transferId = UUID.fromString(elements(2))
       val assetSource = AssetSources.toAssetSource(elements(1))
@@ -66,8 +71,8 @@ object Context {
   def objectKeyParser(objectKey: String): ObjectKeyContext = {
     val elements = objectKey.split('/').toList
     elements.size match {
-      case 5 => uploadObjectKeyParser(elements, objectKey)
-      case _ => defaultObjectKeyParser(elements, objectKey)
+      case 5 | 4 => uploadObjectKeyParser(elements, objectKey)
+      case _     => defaultObjectKeyParser(elements, objectKey)
     }
   }
 }
