@@ -16,8 +16,8 @@ object ObjectCategories {
   def toObjectCategory(objectCategory: String): ObjectCategory = {
     objectCategory match {
       case Metadata.id => Metadata
-      case Records.id => Records
-      case _ => throw new RuntimeException(s"Invalid object category: $objectCategory")
+      case Records.id  => Records
+      case _           => throw new RuntimeException(s"Invalid object category: $objectCategory")
     }
   }
 }

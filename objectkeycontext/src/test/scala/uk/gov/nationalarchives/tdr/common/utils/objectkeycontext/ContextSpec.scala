@@ -32,9 +32,9 @@ class ContextSpec extends AnyWordSpec with MockitoSugar {
       val objectName = s"${UUID.randomUUID()}.${ObjectTypes.Metadata.id}"
       val result = Context.objectKeyParser(s"$userId/$assetSource/$transferId/$objectCategory/$objectName")
 
-      result.userId.get shouldBe userId
+      result.userId.get shouldEqual userId
       result.objectName shouldEqual objectName
-      result.transferId shouldBe transferId
+      result.transferId shouldEqual transferId
       result.assetSource.get shouldBe SharePoint
       result.category.get shouldBe ObjectCategories.Metadata
       result.objectType shouldBe ObjectTypes.Metadata

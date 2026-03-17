@@ -23,11 +23,11 @@ object AssetSources {
 
   def toAssetSource(assetSource: String): AssetSource = {
     assetSource match {
-      case Droid.id => Droid
-      case HardDrive.id => HardDrive
+      case Droid.id        => Droid
+      case HardDrive.id    => HardDrive
       case NetworkDrive.id => NetworkDrive
-      case SharePoint.id => SharePoint
-      case _ => throw new RuntimeException(s"Invalid asset source: $assetSource")
+      case SharePoint.id   => SharePoint
+      case _               => throw new RuntimeException(s"Invalid asset source: $assetSource")
     }
   }
 }

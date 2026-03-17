@@ -28,7 +28,7 @@ class AssetSourcesSpec  extends AnyWordSpec with MockitoSugar {
         AssetSources.toAssetSource("someRandomValue")
       }
 
-      exception.getMessage should equal("Invalid asset source: someRandomValue")
+      exception.getMessage shouldEqual "Invalid asset source: someRandomValue"
     }
   }
 }

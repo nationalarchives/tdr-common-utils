@@ -23,11 +23,11 @@ object ObjectTypes {
 
   def toObjectType(objectCategory: String): ObjectType = {
     objectCategory match {
-      case Csv.id => Csv
-      case Error.id => Error
+      case Csv.id      => Csv
+      case Error.id    => Error
       case Metadata.id => Metadata
-      case Record.id => Record
-      case _ => throw new RuntimeException(s"Invalid object type: $objectCategory")
+      case Record.id   => Record
+      case _           => throw new RuntimeException(s"Invalid object type: $objectCategory")
     }
   }
 }

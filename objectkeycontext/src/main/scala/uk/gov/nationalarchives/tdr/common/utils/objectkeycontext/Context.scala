@@ -30,20 +30,19 @@ object Context {
       val transferId = UUID.fromString(elements.head)
       ObjectKeyContext(transferId = transferId, objectType = objectType, objectName = objectName)
     } match {
-      case Failure(ex) => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
+      case Failure(ex)               => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
       case Success(objectKeyContext) => objectKeyContext
     }
   }
 
   private def uploadObjectKeyParser(elements: List[String], objectKey: String): ObjectKeyContext = {
     Try {
-      val keyElements = elements.reverse
-      val objectName = keyElements.head
+      val objectName = elements.last
       val objectType = getObjectType(objectName)
-      val objectCategory = ObjectCategories.toObjectCategory(keyElements(1))
-      val transferId = UUID.fromString(keyElements(2))
-      val assetSource = AssetSources.toAssetSource(keyElements(3))
-      val userId = UUID.fromString(keyElements.last)
+      val objectCategory = ObjectCategories.toObjectCategory(elements(3))
+      val transferId = UUID.fromString(elements(2))
+      val assetSource = AssetSources.toAssetSource(elements(1))
+      val userId = UUID.fromString(elements.head)
       ObjectKeyContext(Some(userId), transferId, Some(assetSource), Some(objectCategory), objectType, objectName)
     } match {
       case Failure(ex)               => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
@@ -53,6 +52,11 @@ object Context {
 
   /**
    * Method parse AWS S3 object key returning its context
+   *
+   * Supports two forms of object key:
+   * - default key: {consignment id}/{object}
+   * - upload key: {user id}/{asset source}/{consignment id}/{object category}/{object}
+   *
    * @param objectKey
    * Key of the object
    *
