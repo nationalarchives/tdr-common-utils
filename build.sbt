@@ -55,17 +55,27 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val statuses = (project in file("statuses"))
-  .settings(commonSettings).settings(
-    name := "tdr-statuses",
-    description := "A project containing TDR statuses",
-    libraryDependencies ++= Seq()
-  )
-
 lazy val objectKeyContext = (project in file("objectkeycontext"))
   .settings(commonSettings).settings(
     name := "tdr-object-key-context",
     description := "A project contain TDR object context",
+    libraryDependencies ++= Seq()
+  )
+
+lazy val serviceInputs = (project in file("serviceinputs"))
+  .settings(commonSettings).settings(
+    name := "tdr-service-inputs",
+    description := "A project containing inputs to trigger TDR services",
+    libraryDependencies ++= Seq(
+      circeCore,
+      circeGeneric
+    )
+  )
+
+lazy val statuses = (project in file("statuses"))
+  .settings(commonSettings).settings(
+    name := "tdr-statuses",
+    description := "A project containing TDR statuses",
     libraryDependencies ++= Seq()
   )
 
@@ -74,4 +84,4 @@ lazy val root = (project in file("."))
   .settings(
     name := "tdr-common-utils",
     publish / skip := true
-  ).aggregate(statuses, objectKeyContext)
+  ).aggregate(objectKeyContext, serviceInputs, statuses)
