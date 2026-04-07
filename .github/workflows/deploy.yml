@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 jobs:
   deploy:
-    uses: nationalarchives/tdr-github-actions/.github/workflows/sbt_release.yml@4cce7fa069b9dbecddbdacd9350f66adc50ac815 # v0.0.22
+    uses: nationalarchives/tdr-github-actions/.github/workflows/sbt_release.yml@af4df0b5325dcd5277e8291745c9e5a7d2e68d79 # v0.0.29
     with:
       library-name: "Common utils"
     secrets:
