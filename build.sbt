@@ -55,6 +55,17 @@ lazy val commonSettings = Seq(
   )
 )
 
+lazy val authorisation = (project in file("authorisation"))
+  .settings(commonSettings).settings(
+    name := "tdr-authorisation",
+    description := "A project containing authorisation logic to TDR transfers",
+    libraryDependencies ++= Seq(
+      catsEffect,
+      generatedGraphql,
+      graphqlClient
+    )
+  )
+
 lazy val objectKeyContext = (project in file("objectkeycontext"))
   .settings(commonSettings).settings(
     name := "tdr-object-key-context",
@@ -84,4 +95,4 @@ lazy val root = (project in file("."))
   .settings(
     name := "tdr-common-utils",
     publish / skip := true
-  ).aggregate(objectKeyContext, serviceInputs, statuses)
+  ).aggregate(authorisation, objectKeyContext, serviceInputs, statuses)
