@@ -62,7 +62,8 @@ lazy val authorisation = (project in file("authorisation"))
     libraryDependencies ++= Seq(
       catsEffect,
       generatedGraphql,
-      graphqlClient
+      graphqlClient,
+      tdrAuthUtils
     )
   )
 

@@ -12,4 +12,6 @@ object Dependencies {
 
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.1.0"
+
+  lazy val tdrAuthUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.281"
 }

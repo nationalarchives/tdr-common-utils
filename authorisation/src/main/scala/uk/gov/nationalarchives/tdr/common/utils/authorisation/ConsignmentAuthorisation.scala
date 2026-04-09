@@ -9,6 +9,7 @@ import sttp.client3.{Identity, SttpBackend}
 import sttp.model.StatusCode
 import uk.gov.nationalarchives.tdr.GraphQLClient
 import uk.gov.nationalarchives.tdr.error.{HttpException, NotAuthorisedError}
+import uk.gov.nationalarchives.tdr.keycloak.Token
 
 import java.util.UUID
 
@@ -16,8 +17,19 @@ class ConsignmentAuthorisation(accessClient: GraphQLClient[gc.Data, gc.Variables
                               (implicit val backend: SttpBackend[Identity, Any])
   extends Authorisation[ConsignmentAuthorisationInput] {
 
+  /**
+   * Method to check access to a given consignment
+   *
+   * Uses access client to call source data to provide access check
+   *
+   * @param input
+   * Authorisation input to check
+   *
+   * @return
+   * AuthorisationResult: Allow or Deny
+   * */
   def hasAccess(input: ConsignmentAuthorisationInput): IO[AuthorisationResult] = for {
-    result <- IO.fromFuture(IO(accessClient.getResult(new BearerAccessToken(input.authorizationToken), document, Variables(input.consignmentId).some))).attempt.map {
+    result <- IO.fromFuture(IO(accessClient.getResult(input.authorizationToken.bearerAccessToken, document, Variables(input.consignmentId).some))).attempt.map {
       case Left(e: HttpException) if e.response.code == StatusCode.Forbidden => Deny
       case Left(e: Throwable) => throw e
       case Right(response) => response.errors match {
@@ -32,5 +44,5 @@ class ConsignmentAuthorisation(accessClient: GraphQLClient[gc.Data, gc.Variables
 
 case class ConsignmentAuthorisationInput(
                                           consignmentId: UUID,
-                                          authorizationToken: String
+                                          authorizationToken: Token
                                         ) extends AuthorisationInput

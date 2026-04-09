@@ -1,13 +1,14 @@
 package uk.gov.nationalarchives.tdr.common.utils.authorisation
 
 import cats.effect.IO
+import uk.gov.nationalarchives.tdr.keycloak.Token
 
 trait Authorisation[T <: AuthorisationInput] {
   def hasAccess(input: T): IO[AuthorisationResult]
 }
 
 trait AuthorisationInput {
-  val authorizationToken: String
+  val authorizationToken: Token
 }
 
 sealed trait AuthorisationResult {
