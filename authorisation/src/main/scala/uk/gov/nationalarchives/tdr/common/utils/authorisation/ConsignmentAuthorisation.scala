@@ -28,8 +28,9 @@ class ConsignmentAuthorisation(accessClient: GraphQLClient[gc.Data, gc.Variables
    * @return
    * AuthorisationResult: Allow or Deny
    * */
-  def hasAccess(input: ConsignmentAuthorisationInput): IO[AuthorisationResult] = for {
-    result <- IO.fromFuture(IO(accessClient.getResult(input.authorizationToken.bearerAccessToken, document, Variables(input.consignmentId).some))).attempt.map {
+  def hasAccess(input: ConsignmentAuthorisationInput): IO[AuthorisationResult] =
+    IO.fromFuture(IO(accessClient.getResult(
+      input.authorizationToken.bearerAccessToken, document, Variables(input.consignmentId).some))).attempt.map {
       case Left(e: HttpException) if e.response.code == StatusCode.Forbidden => Deny
       case Left(e: Throwable) => throw e
       case Right(response) => response.errors match {
@@ -37,8 +38,8 @@ class ConsignmentAuthorisation(accessClient: GraphQLClient[gc.Data, gc.Variables
         case List(_: NotAuthorisedError) => Deny
         case errors => throw new RuntimeException(s"Access client response contained errors: ${errors.map(e => e.message).mkString}")
       }
-    }
-  } yield result
+  }
+
 }
 
 
