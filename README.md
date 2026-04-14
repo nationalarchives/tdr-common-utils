@@ -74,7 +74,7 @@ MetadataReviewStatus.Approved.value   // "Approved"
 MetadataReviewStatus.Completed.value  // "Completed"
 
 // Parse from a string:
-MetadataReviewStatus.toMetadataReviewStatus("Approved")
+MetadataReviewStatus.MetadataReviewStatus("Approved")
 ```
 
 ## Prerequisites

@@ -21,11 +21,13 @@ object MetadataReviewStatus {
     val value: String = "Completed"
   }
 
-  def toMetadataReviewStatus(s: String): MetadataReviewStatus = s match {
-    case Requested.value => Requested
-    case Rejected.value  => Rejected
-    case Approved.value  => Approved
-    case Completed.value => Completed
-    case _               => throw new RuntimeException(s"Invalid metadata review status: $s")
+  object MetadataReviewStatus {
+    def apply(s: String): MetadataReviewStatus = s match {
+      case Requested.value => Requested
+      case Rejected.value  => Rejected
+      case Approved.value  => Approved
+      case Completed.value => Completed
+      case _               => throw new RuntimeException(s"Invalid metadata review status: $s")
+    }
   }
 }

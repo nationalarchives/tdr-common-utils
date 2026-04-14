@@ -15,17 +15,17 @@ class MetadataReviewStatusSpec extends AnyWordSpec with MockitoSugar {
     }
   }
 
-  "toMetadataReviewStatus" should {
+  "MetadataReviewStatus constructor" should {
     "return the correct status for a given string" in {
-      toMetadataReviewStatus("Requested") shouldBe Requested
-      toMetadataReviewStatus("Rejected") shouldBe Rejected
-      toMetadataReviewStatus("Approved") shouldBe Approved
-      toMetadataReviewStatus("Completed") shouldBe Completed
+      MetadataReviewStatus("Requested") shouldBe Requested
+      MetadataReviewStatus("Rejected") shouldBe Rejected
+      MetadataReviewStatus("Approved") shouldBe Approved
+      MetadataReviewStatus("Completed") shouldBe Completed
     }
 
     "throw an exception when status is unrecognised" in {
       val exception = intercept[RuntimeException] {
-        toMetadataReviewStatus("someRandomValue")
+        MetadataReviewStatus("someRandomValue")
       }
       exception.getMessage should equal("Invalid metadata review status: someRandomValue")
     }
