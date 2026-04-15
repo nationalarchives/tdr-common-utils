@@ -77,6 +77,26 @@ MetadataReviewStatus.Completed.value  // "Completed"
 MetadataReviewStatus.MetadataReviewStatus("Approved")
 ```
 
+**Metadata review log actions:** `Submission`, `Rejection`, `Approval`, `Confirmation`
+
+The `MetadataReviewLogAction` object provides an enum for metadata review log actions. Each action has a `reviewStatus` field that links it to the corresponding `MetadataReviewStatus`:
+
+| Action | `reviewStatus` |
+|---|---|
+| `Submission` | `MetadataReviewStatus.Requested` |
+| `Rejection` | `MetadataReviewStatus.Rejected` |
+| `Approval` | `MetadataReviewStatus.Approved` |
+| `Confirmation` | `MetadataReviewStatus.Completed` |
+
+```scala
+import uk.gov.nationalarchives.tdr.common.utils.statuses.MetadataReviewLogAction
+
+val action = MetadataReviewLogAction.MetadataReviewLogAction("Submission")
+action.value                // "Submission"
+action.reviewStatus         // MetadataReviewStatus.Requested
+action.reviewStatus.value   // "Requested"
+```
+
 ## Prerequisites
 
 - **Java** 11+
