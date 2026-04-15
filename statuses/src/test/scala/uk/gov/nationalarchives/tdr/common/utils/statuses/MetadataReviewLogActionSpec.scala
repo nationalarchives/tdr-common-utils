@@ -1,9 +1,10 @@
 package uk.gov.nationalarchives.tdr.common.utils.statuses
-import org.mockito.MockitoSugar
+
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.nationalarchives.tdr.common.utils.statuses.MetadataReviewLogAction._
-class MetadataReviewLogActionSpec extends AnyWordSpec with MockitoSugar {
+
+class MetadataReviewLogActionSpec extends AnyWordSpec {
   "MetadataReviewLogAction" should {
     "have the correct value" in {
       Submission.value should equal("Submission")
