@@ -8,7 +8,7 @@ object Dependencies {
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
 
   lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.467"
-  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.290"
+  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.291"
 
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.1"
