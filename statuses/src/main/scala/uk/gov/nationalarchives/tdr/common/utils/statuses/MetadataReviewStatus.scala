@@ -17,16 +17,16 @@ object MetadataReviewStatus {
     val value: String = "Approved"
   }
 
-  case object Completed extends MetadataReviewStatus {
-    val value: String = "Completed"
+  case object Transferred extends MetadataReviewStatus {
+    val value: String = "Transferred"
   }
 
   object MetadataReviewStatus {
     def apply(s: String): MetadataReviewStatus = s match {
-      case Requested.value => Requested
-      case Rejected.value  => Rejected
-      case Approved.value  => Approved
-      case Completed.value => Completed
+      case Requested.value  => Requested
+      case Rejected.value   => Rejected
+      case Approved.value   => Approved
+      case Transferred.value => Transferred
       case _               => throw new RuntimeException(s"Invalid metadata review status: $s")
     }
   }
