@@ -17,7 +17,7 @@ class MetadataReviewLogActionSpec extends AnyWordSpec {
       Submission.reviewStatus shouldBe Requested
       Rejection.reviewStatus shouldBe Rejected
       Approval.reviewStatus shouldBe Approved
-      Confirmation.reviewStatus shouldBe Completed
+      Confirmation.reviewStatus shouldBe Transferred
     }
   }
   "MetadataReviewLogAction constructor" should {
