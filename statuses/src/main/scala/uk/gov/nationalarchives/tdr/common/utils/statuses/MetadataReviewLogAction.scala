@@ -25,7 +25,7 @@ object MetadataReviewLogAction {
 
   case object Confirmation extends MetadataReviewLogAction {
     val value: String = "Confirmation"
-    val reviewStatus: MetadataReviewStatus = Completed
+    val reviewStatus: MetadataReviewStatus = Transferred
   }
 
   object MetadataReviewLogAction {

@@ -61,7 +61,7 @@ Defines the status types and values used throughout the TDR workflow.
 
 **Status values:** `Completed`, `CompletedWithIssues`, `InProgress`, `Failed`
 
-**Metadata review statuses:** `Requested`, `Rejected`, `Approved`, `Completed`
+**Metadata review statuses:** `Requested`, `Rejected`, `Approved`, `Transferred`
 
 The `MetadataReviewStatus` object provides a dedicated enum for metadata review workflow states:
 
@@ -71,7 +71,7 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.MetadataReviewStatus
 MetadataReviewStatus.Requested.value  // "Requested"
 MetadataReviewStatus.Rejected.value   // "Rejected"
 MetadataReviewStatus.Approved.value   // "Approved"
-MetadataReviewStatus.Completed.value  // "Completed"
+MetadataReviewStatus.Transferred.value  // "Transferred"
 
 // Parse from a string:
 MetadataReviewStatus.MetadataReviewStatus("Approved")
@@ -86,7 +86,7 @@ The `MetadataReviewLogAction` object provides an enum for metadata review log ac
 | `Submission` | `MetadataReviewStatus.Requested` |
 | `Rejection` | `MetadataReviewStatus.Rejected` |
 | `Approval` | `MetadataReviewStatus.Approved` |
-| `Confirmation` | `MetadataReviewStatus.Completed` |
+| `Confirmation` | `MetadataReviewStatus.Transferred` |
 
 ```scala
 import uk.gov.nationalarchives.tdr.common.utils.statuses.MetadataReviewLogAction

@@ -10,7 +10,7 @@ class MetadataReviewStatusSpec extends AnyWordSpec {
       Requested.value should equal("Requested")
       Rejected.value should equal("Rejected")
       Approved.value should equal("Approved")
-      Completed.value should equal("Completed")
+      Transferred.value should equal("Transferred")
     }
   }
 
@@ -19,7 +19,7 @@ class MetadataReviewStatusSpec extends AnyWordSpec {
       MetadataReviewStatus("Requested") shouldBe Requested
       MetadataReviewStatus("Rejected") shouldBe Rejected
       MetadataReviewStatus("Approved") shouldBe Approved
-      MetadataReviewStatus("Completed") shouldBe Completed
+      MetadataReviewStatus("Transferred") shouldBe Transferred
     }
 
     "throw an exception when status is unrecognised" in {
