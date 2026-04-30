@@ -1,6 +1,7 @@
 package uk.gov.nationalarchives.tdr.common.utils.objectkeycontext
 
 import uk.gov.nationalarchives.tdr.common.utils.objectkeycontext.AssetSources.AssetSource
+import uk.gov.nationalarchives.tdr.common.utils.objectkeycontext.Buckets.{DirtyUploadBucketPrefix, ExportBucketPrefix}
 import uk.gov.nationalarchives.tdr.common.utils.objectkeycontext.ObjectCategories.ObjectCategory
 import uk.gov.nationalarchives.tdr.common.utils.objectkeycontext.ObjectTypes.{ObjectType, Record}
 
@@ -10,11 +11,13 @@ import scala.util.{Failure, Success, Try}
 object Context {
   case class ObjectKeyContext(
                                userId: Option[UUID] = None,
-                               transferId: UUID,
+                               transferId: Option[UUID] = None,
                                assetSource: Option[AssetSource] = None,
                                category: Option[ObjectCategory] = None,
                                objectType: Option[ObjectType] = None,
-                               objectName: Option[String] = None
+                               objectName: Option[String] = None,
+                               assetId: Option[UUID] = None,
+                               fileId: Option[UUID] = None,
                              )
 
   private def getObjectType(element: String): ObjectType = {
@@ -32,7 +35,7 @@ object Context {
       val objectName = elements.last
       val objectType = getObjectType(objectName)
       val transferId = UUID.fromString(elements.head)
-      ObjectKeyContext(transferId = transferId, objectType = Some(objectType), objectName = Some(objectName))
+      ObjectKeyContext(transferId = Some(transferId), objectType = Some(objectType), objectName = Some(objectName))
     } match {
       case Failure(ex)               => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
       case Success(objectKeyContext) => objectKeyContext
@@ -48,9 +51,34 @@ object Context {
       val transferId = UUID.fromString(elements(2))
       val assetSource = AssetSources.toAssetSource(elements(1))
       val userId = UUID.fromString(elements.head)
-      ObjectKeyContext(Some(userId), transferId, Some(assetSource), Some(objectCategory), objectType, objectName)
+      ObjectKeyContext(
+        Some(userId),
+        Some(transferId),
+        Some(assetSource),
+        Some(objectCategory),
+        objectType, objectName)
     } match {
       case Failure(ex)               => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
+      case Success(objectKeyContext) => objectKeyContext
+    }
+  }
+
+  private def exportObjectKeyParser(elements: List[String], objectKey: String): ObjectKeyContext = {
+    Try {
+      if (elements.size == 2) {
+        val assetId = UUID.fromString(elements.head)
+        val fileId = UUID.fromString(elements.last)
+        val objectType = getObjectType(elements.last)
+        ObjectKeyContext(objectType = Some(objectType), objectName = Some(elements.last), assetId = Some(assetId), fileId = Some(fileId))
+      } else {
+        val assetElements = elements.head.split("\\.")
+        val assetId = UUID.fromString(assetElements.head)
+        val objectType = getObjectType(objectKey)
+        ObjectKeyContext(objectType = Some(objectType), objectName = elements.headOption, assetId = Some(assetId))
+      }
+
+    } match {
+      case Failure(ex) => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
       case Success(objectKeyContext) => objectKeyContext
     }
   }
@@ -60,7 +88,8 @@ object Context {
    *
    * Supports two forms of object key:
    * - default key: {consignment id}/{object}
-   * - upload key: {user id}/{asset source}/{consignment id}/{object category}/{object}
+   * - upload bucket key: {user id}/{asset source}/{consignment id}/{object category}/{object}
+   * - export bucket keys: {asset id}.metadata; or {asset id}/{object}
    *
    * @param objectKey
    * Key of the object
@@ -68,11 +97,13 @@ object Context {
    * @return
    * ObjectKeyContext
    * */
-  def objectKeyParser(objectKey: String): ObjectKeyContext = {
+  def objectKeyParser(objectKey: String, bucketName: String): ObjectKeyContext = {
     val elements = objectKey.split('/').toList
-    elements.size match {
-      case 5 | 4 => uploadObjectKeyParser(elements, objectKey)
-      case _     => defaultObjectKeyParser(elements, objectKey)
+
+    bucketName match {
+      case _ if bucketName.startsWith(DirtyUploadBucketPrefix.id) => uploadObjectKeyParser(elements, objectKey)
+      case _ if bucketName.startsWith(ExportBucketPrefix.id)      => exportObjectKeyParser(elements, objectKey)
+      case _                                                      => defaultObjectKeyParser(elements, objectKey)
     }
   }
 }
