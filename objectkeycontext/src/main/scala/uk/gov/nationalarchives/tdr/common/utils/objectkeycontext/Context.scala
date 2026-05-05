@@ -76,7 +76,6 @@ object Context {
         val objectType = getObjectType(objectKey)
         ObjectKeyContext(objectType = Some(objectType), objectName = elements.headOption, assetId = Some(assetId))
       }
-
     } match {
       case Failure(ex) => throw new RuntimeException(s"Invalid object key $objectKey: ${ex.getMessage}")
       case Success(objectKeyContext) => objectKeyContext
