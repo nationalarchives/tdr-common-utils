@@ -62,7 +62,7 @@ Defines the status types and values used throughout the TDR workflow.
 
 **Status values:** `AmbiguousOriginalFile`, `Completed`, `CompletedWithIssues`, `DuplicateFileName`, `Failed`, `InProgress`, `Mismatch`, `MultipleFormats`, `NoOriginalFile`, `NonJudgmentFormat`, `Success`, `VirusDetected`, `ZeroByteFile`
 
-Unrecognised strings are wrapped in `CustomValue(reason)` to support dynamic values (e.g. disallowed PUID reasons from the database).
+Unrecognised strings are wrapped in `CustomValue(reason)` to support dynamic values (e.g. disallowed PUID reasons from the [da-metadata-schema](https://github.com/nationalarchives/da-metadata-schema) repository).
 
 **Status scopes:** `File`, `Consignment`
 
@@ -80,6 +80,7 @@ action(FFIDType, ZeroByteFileValue)
 
 action(FFIDType, CustomValue("PasswordProtected"))
 // Some(StatusAction(UserFixable, "ffid.PasswordProtected"))
+// CustomValue reason comes from the disallowed PUIDs "reason" field in da-metadata-schema
 
 action(FFIDType, SuccessValue)
 // None (not a failure)
