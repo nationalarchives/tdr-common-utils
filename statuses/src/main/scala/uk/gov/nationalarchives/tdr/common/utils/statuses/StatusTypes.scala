@@ -134,7 +134,7 @@ object StatusTypes {
       case ExportType.id              => ExportType
       case FFIDType.id                => FFIDType
       case MetadataReviewType.id      => MetadataReviewType
-      case RedactionType.id         => RedactionType
+      case RedactionType.id           => RedactionType
       case SeriesType.id              => SeriesType
       case ServerAntivirusType.id     => ServerAntivirusType
       case ServerChecksumType.id      => ServerChecksumType
