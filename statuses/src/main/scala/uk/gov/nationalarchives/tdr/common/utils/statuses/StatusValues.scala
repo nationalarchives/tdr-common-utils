@@ -20,7 +20,7 @@ object StatusValues {
       case NoOriginalFileValue.value        => NoOriginalFileValue
       case AmbiguousOriginalFileValue.value => AmbiguousOriginalFileValue
       case DuplicateFileNameValue.value     => DuplicateFileNameValue
-      case _                                => throw new RuntimeException(s"Invalid status value: $id")
+      case other                            => CustomValue(other)
     }
   }
 
@@ -75,4 +75,6 @@ object StatusValues {
   case object DuplicateFileNameValue extends StatusValue {
     val value: String = "DuplicateFileName"
   }
+
+  case class CustomValue(value: String) extends StatusValue
 }

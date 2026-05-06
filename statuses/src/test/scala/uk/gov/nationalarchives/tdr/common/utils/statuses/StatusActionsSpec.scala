@@ -30,6 +30,11 @@ class StatusActionsSpec extends AnyWordSpec with MockitoSugar {
       action(FFIDType, FailedValue, Some("fmt/789")) shouldBe Some(StatusAction(UserFixable, "ffid.failed.fmt/789"))
     }
 
+    "use dynamic reason as message key for FFID with CustomValue" in {
+      action(FFIDType, CustomValue("PasswordProtected")) shouldBe Some(StatusAction(UserFixable, "ffid.PasswordProtected"))
+      action(FFIDType, CustomValue("PasswordProtected"), Some("fmt/123")) shouldBe Some(StatusAction(UserFixable, "ffid.PasswordProtected.fmt/123"))
+    }
+
     "exclude puid from FFID message key when not provided" in {
       action(FFIDType, NonJudgmentFormatValue, None) shouldBe Some(StatusAction(UserFixable, "ffid.nonJudgmentFormat"))
     }

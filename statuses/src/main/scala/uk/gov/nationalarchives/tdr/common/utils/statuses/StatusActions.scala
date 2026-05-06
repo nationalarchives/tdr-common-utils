@@ -31,6 +31,7 @@ object StatusActions {
       case (FFIDType, ZeroByteFileValue)      => Some(StatusAction(UserFixable, ffidKey("zeroByteFile", puid)))
       case (FFIDType, MultipleFormatsValue)   => Some(StatusAction(UserFixable, ffidKey("multipleFormats", puid)))
       case (FFIDType, FailedValue)            => Some(StatusAction(UserFixable, ffidKey("failed", puid)))
+      case (FFIDType, CustomValue(reason))    => Some(StatusAction(UserFixable, ffidKey(reason, puid)))
 
       case (AntivirusType, VirusDetectedValue) => Some(StatusAction(UserFixable, "antivirus.virusDetected"))
       case (AntivirusType, FailedValue)        => Some(StatusAction(UserFixable, "antivirus.failed"))

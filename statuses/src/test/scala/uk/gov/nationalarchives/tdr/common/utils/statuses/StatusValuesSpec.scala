@@ -42,10 +42,9 @@ class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
     }
 
     "throw an exception when id is unrecognised" in {
-      val exception = intercept[RuntimeException] {
-        StatusValue.apply("someInvalidId")
-      }
-      exception.getMessage should equal("Invalid status value: someInvalidId")
+      val result = StatusValue.apply("SomeDynamicReason")
+      result shouldBe CustomValue("SomeDynamicReason")
+      result.value should equal("SomeDynamicReason")
     }
   }
 
