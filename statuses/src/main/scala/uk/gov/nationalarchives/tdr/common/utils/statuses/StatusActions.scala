@@ -41,8 +41,11 @@ object StatusActions {
       case (ClientChecksumType, FailedValue)  => Some(StatusAction(UserFixable, "clientChecksum.failed"))
       case (ClientFilePathType, FailedValue)  => Some(StatusAction(UserFixable, "clientFilePath.failed"))
 
-      case (RedactionType, SuccessValue) => None
-      case (RedactionType, _)            => Some(StatusAction(UserFixable, "redaction.failed"))
+      case (RedactionType, SuccessValue)               => None
+      case (RedactionType, NoOriginalFileValue)        => Some(StatusAction(UserFixable, "redaction.noOriginalFile"))
+      case (RedactionType, AmbiguousOriginalFileValue) => Some(StatusAction(UserFixable, "redaction.ambiguousOriginalFile"))
+      case (RedactionType, DuplicateFileNameValue)     => Some(StatusAction(UserFixable, "redaction.duplicateFileName"))
+      case (RedactionType, _)                          => Some(StatusAction(UserFixable, "redaction.failed"))
 
       case (statusType, reason) => Some(StatusAction(UserFixable, s"${statusType.id.toLowerCase}.${reason.value.toLowerCase}"))
     }

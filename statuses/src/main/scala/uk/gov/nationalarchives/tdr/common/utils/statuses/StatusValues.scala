@@ -7,17 +7,20 @@ object StatusValues {
 
   object StatusValue {
     def apply(id: String): StatusValue = id match {
-      case CompletedWithIssuesValue.value => CompletedWithIssuesValue
-      case CompletedValue.value           => CompletedValue
-      case InProgressValue.value          => InProgressValue
-      case FailedValue.value              => FailedValue
-      case SuccessValue.value             => SuccessValue
-      case VirusDetectedValue.value       => VirusDetectedValue
-      case NonJudgmentFormatValue.value   => NonJudgmentFormatValue
-      case MismatchValue.value            => MismatchValue
-      case ZeroByteFileValue.value        => ZeroByteFileValue
-      case MultipleFormatsValue.value     => MultipleFormatsValue
-      case _                              => throw new RuntimeException(s"Invalid status value: $id")
+      case CompletedWithIssuesValue.value   => CompletedWithIssuesValue
+      case CompletedValue.value             => CompletedValue
+      case InProgressValue.value            => InProgressValue
+      case FailedValue.value                => FailedValue
+      case SuccessValue.value               => SuccessValue
+      case VirusDetectedValue.value         => VirusDetectedValue
+      case NonJudgmentFormatValue.value     => NonJudgmentFormatValue
+      case MismatchValue.value              => MismatchValue
+      case ZeroByteFileValue.value          => ZeroByteFileValue
+      case MultipleFormatsValue.value       => MultipleFormatsValue
+      case NoOriginalFileValue.value        => NoOriginalFileValue
+      case AmbiguousOriginalFileValue.value => AmbiguousOriginalFileValue
+      case DuplicateFileNameValue.value     => DuplicateFileNameValue
+      case _                                => throw new RuntimeException(s"Invalid status value: $id")
     }
   }
 
@@ -59,5 +62,17 @@ object StatusValues {
 
   case object MultipleFormatsValue extends StatusValue {
     val value: String = "MultipleFormats"
+  }
+
+  case object NoOriginalFileValue extends StatusValue {
+    val value: String = "NoOriginalFile"
+  }
+
+  case object AmbiguousOriginalFileValue extends StatusValue {
+    val value: String = "AmbiguousOriginalFile"
+  }
+
+  case object DuplicateFileNameValue extends StatusValue {
+    val value: String = "DuplicateFileName"
   }
 }
