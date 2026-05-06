@@ -60,25 +60,32 @@ Defines the status types and values used throughout the TDR workflow.
 
 **Status types:** `Antivirus`, `ChecksumMatch`, `ClientChecks`, `ClientChecksum`, `ClientFilePath`, `ConfirmTransfer`, `DraftMetadata`, `DraftMetadataUpload`, `Export`, `FFID`, `MetadataReview`, `Redaction`, `Series`, `ServerAntivirus`, `ServerChecksum`, `ServerFFID`, `ServerRedaction`, `TransferAgreement`, `Upload`
 
-**Status values:** `Completed`, `CompletedWithIssues`, `Failed`, `InProgress`, `Mismatch`, `MultipleFormats`, `NonJudgmentFormat`, `Success`, `VirusDetected`, `ZeroByteFile`
+**Status values:** `AmbiguousOriginalFile`, `Completed`, `CompletedWithIssues`, `DuplicateFileName`, `Failed`, `InProgress`, `Mismatch`, `MultipleFormats`, `NoOriginalFile`, `NonJudgmentFormat`, `Success`, `VirusDetected`, `ZeroByteFile`
+
+Unrecognised strings are wrapped in `CustomValue(reason)` to support dynamic values (e.g. disallowed PUID reasons from the database).
 
 **Status scopes:** `File`, `Consignment`
 
 **Status actions:** `UserFixable`, `TNASupport`
 
-The `StatusActions` object maps a `(StatusType, StatusValue)` pair to an optional action indicating what a user should do about a failure:
+The `StatusActions` object maps a `(StatusType, StatusValue)` pair to an optional `StatusAction` containing the action type and a message key for use with `message.properties`:
 
 ```scala
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusActions._
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 
-action(FFIDType, ZeroByteFileValue)       // Some(UserFixable)
-action(AntivirusType, VirusDetectedValue) // Some(UserFixable)
-action(FFIDType, SuccessValue)            // None (not a failure)
+action(FFIDType, ZeroByteFileValue)
+// Some(StatusAction(UserFixable, "ffid.zeroByteFile"))
+
+action(FFIDType, CustomValue("PasswordProtected"))
+// Some(StatusAction(UserFixable, "ffid.PasswordProtected"))
+
+action(FFIDType, SuccessValue)
+// None (not a failure)
 ```
 
-Returns `None` for non-failure statuses (Success, Completed, InProgress) and `Some(action)` for failures.
+Returns `None` for non-failure statuses (Success, Completed, InProgress) and `Some(StatusAction(actionType, messageKey))` for failures.
 
 **Metadata review statuses:** `Requested`, `Rejected`, `Approved`, `Transferred`
 
