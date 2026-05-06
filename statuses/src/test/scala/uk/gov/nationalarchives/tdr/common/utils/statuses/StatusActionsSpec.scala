@@ -16,38 +16,43 @@ class StatusActionsSpec extends AnyWordSpec with MockitoSugar {
       action(ClientChecksumType, InProgressValue) shouldBe None
     }
 
-    "return UserFixable for FFID failure reasons" in {
-      action(FFIDType, NonJudgmentFormatValue) shouldBe Some(UserFixable)
-      action(FFIDType, ZeroByteFileValue) shouldBe Some(UserFixable)
-      action(FFIDType, MultipleFormatsValue) shouldBe Some(UserFixable)
-      action(FFIDType, FailedValue) shouldBe Some(UserFixable)
+    "return UserFixable with correct message key for FFID failure reasons" in {
+      action(FFIDType, NonJudgmentFormatValue) shouldBe Some(StatusAction(UserFixable, "ffid.nonJudgmentFormat"))
+      action(FFIDType, ZeroByteFileValue) shouldBe Some(StatusAction(UserFixable, "ffid.zeroByteFile"))
+      action(FFIDType, MultipleFormatsValue) shouldBe Some(StatusAction(UserFixable, "ffid.multipleFormats"))
+      action(FFIDType, FailedValue) shouldBe Some(StatusAction(UserFixable, "ffid.failed"))
     }
 
-    "return UserFixable for antivirus failures" in {
-      action(AntivirusType, VirusDetectedValue) shouldBe Some(UserFixable)
-      action(AntivirusType, FailedValue) shouldBe Some(UserFixable)
+    "return UserFixable with correct message key for antivirus failures" in {
+      action(AntivirusType, VirusDetectedValue) shouldBe Some(StatusAction(UserFixable, "antivirus.virusDetected"))
+      action(AntivirusType, FailedValue) shouldBe Some(StatusAction(UserFixable, "antivirus.failed"))
     }
 
-    "return UserFixable for checksum match failures" in {
-      action(ChecksumMatchType, MismatchValue) shouldBe Some(UserFixable)
-      action(ChecksumMatchType, FailedValue) shouldBe Some(UserFixable)
+    "return UserFixable with correct message key for checksum match failures" in {
+      action(ChecksumMatchType, MismatchValue) shouldBe Some(StatusAction(UserFixable, "checksumMatch.mismatch"))
+      action(ChecksumMatchType, FailedValue) shouldBe Some(StatusAction(UserFixable, "checksumMatch.failed"))
     }
 
-    "return UserFixable for client check failures" in {
-      action(ClientChecksumType, FailedValue) shouldBe Some(UserFixable)
-      action(ClientFilePathType, FailedValue) shouldBe Some(UserFixable)
+    "return UserFixable with correct message key for client check failures" in {
+      action(ClientChecksumType, FailedValue) shouldBe Some(StatusAction(UserFixable, "clientChecksum.failed"))
+      action(ClientFilePathType, FailedValue) shouldBe Some(StatusAction(UserFixable, "clientFilePath.failed"))
     }
 
     "return UserFixable for redaction failures regardless of reason" in {
-      action(RedactionType, FailedValue) shouldBe Some(UserFixable)
-      action(RedactionType, CompletedWithIssuesValue) shouldBe Some(UserFixable)
+      action(RedactionType, FailedValue) shouldBe Some(StatusAction(UserFixable, "redaction.failed"))
+      action(RedactionType, CompletedWithIssuesValue) shouldBe Some(StatusAction(UserFixable, "redaction.failed"))
     }
 
     "return None for redaction success" in {
       action(RedactionType, SuccessValue) shouldBe None
     }
 
-    "have correct string values" in {
+    "generate message key for unmapped combinations" in {
+      val result = action(ServerChecksumType, FailedValue)
+      result shouldBe Some(StatusAction(UserFixable, "serverchecksum.failed"))
+    }
+
+    "have correct string values for action types" in {
       UserFixable.value should equal("UserFixable")
       TNASupport.value should equal("TNASupport")
     }
