@@ -36,6 +36,9 @@ object StatusActions {
       case (ClientChecksumType, FailedValue)  => Some(UserFixable)
       case (ClientFilePathType, FailedValue)  => Some(UserFixable)
 
+      case (RedactionType, SuccessValue) => None
+      case (RedactionType, _)            => Some(UserFixable)
+
       case _ => Some(UserFixable)
     }
 }

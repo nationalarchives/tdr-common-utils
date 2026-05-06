@@ -38,6 +38,15 @@ class StatusActionsSpec extends AnyWordSpec with MockitoSugar {
       action(ClientFilePathType, FailedValue) shouldBe Some(UserFixable)
     }
 
+    "return UserFixable for redaction failures regardless of reason" in {
+      action(RedactionType, FailedValue) shouldBe Some(UserFixable)
+      action(RedactionType, CompletedWithIssuesValue) shouldBe Some(UserFixable)
+    }
+
+    "return None for redaction success" in {
+      action(RedactionType, SuccessValue) shouldBe None
+    }
+
     "have correct string values" in {
       UserFixable.value should equal("UserFixable")
       TNASupport.value should equal("TNASupport")

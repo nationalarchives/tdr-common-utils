@@ -72,6 +72,10 @@ class StatusTypesSpec extends AnyWordSpec with MockitoSugar {
       ServerRedactionType.nonJudgmentStatus shouldBe false
       ServerRedactionType.fileCheckStatus shouldBe true
 
+      RedactionType.id should equal("Redaction")
+      RedactionType.nonJudgmentStatus shouldBe false
+      RedactionType.fileCheckStatus shouldBe true
+
       TransferAgreementType.id should equal("TransferAgreement")
       TransferAgreementType.nonJudgmentStatus shouldBe true
       TransferAgreementType.fileCheckStatus shouldBe false
@@ -95,6 +99,7 @@ class StatusTypesSpec extends AnyWordSpec with MockitoSugar {
       toStatusType("Export") shouldBe ExportType
       toStatusType("FFID") shouldBe FFIDType
       toStatusType("MetadataReview") shouldBe MetadataReviewType
+      toStatusType("Redaction") shouldBe RedactionType
       toStatusType("Series") shouldBe SeriesType
       toStatusType("ServerAntivirus") shouldBe ServerAntivirusType
       toStatusType("ServerChecksum") shouldBe ServerChecksumType

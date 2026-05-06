@@ -85,6 +85,12 @@ object StatusTypes {
     val fileCheckStatus: Boolean = true
   }
 
+  case object RedactionType extends StatusType {
+    val id: String = "Redaction"
+    val nonJudgmentStatus: Boolean = false
+    val fileCheckStatus: Boolean = true
+  }
+
   case object ConfirmTransferType extends StatusType {
     val id: String = "ConfirmTransfer"
     val nonJudgmentStatus: Boolean = true
@@ -128,6 +134,7 @@ object StatusTypes {
       case ExportType.id              => ExportType
       case FFIDType.id                => FFIDType
       case MetadataReviewType.id      => MetadataReviewType
+      case RedactionType.id         => RedactionType
       case SeriesType.id              => SeriesType
       case ServerAntivirusType.id     => ServerAntivirusType
       case ServerChecksumType.id      => ServerChecksumType
