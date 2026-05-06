@@ -4,18 +4,6 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 
 object StatusActions {
-  sealed trait StatusAction {
-    val value: String
-  }
-
-  case object UserFixable extends StatusAction {
-    val value: String = "UserFixable"
-  }
-
-  case object TNASupport extends StatusAction {
-    val value: String = "TNASupport"
-  }
-
   def action(statusType: StatusType, reason: StatusValue): Option[StatusAction] =
     (statusType, reason) match {
       case (_, SuccessValue)      => None
@@ -41,4 +29,16 @@ object StatusActions {
 
       case _ => Some(UserFixable)
     }
+
+  sealed trait StatusAction {
+    val value: String
+  }
+
+  case object UserFixable extends StatusAction {
+    val value: String = "UserFixable"
+  }
+
+  case object TNASupport extends StatusAction {
+    val value: String = "TNASupport"
+  }
 }
