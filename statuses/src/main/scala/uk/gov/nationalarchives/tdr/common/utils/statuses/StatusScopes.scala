@@ -5,6 +5,14 @@ object StatusScopes {
     val value: String
   }
 
+  object StatusScope {
+    def apply(id: String): StatusScope = id match {
+      case FileScope.value        => FileScope
+      case ConsignmentScope.value => ConsignmentScope
+      case _                      => throw new RuntimeException(s"Invalid status scope: $id")
+    }
+  }
+
   case object FileScope extends StatusScope {
     val value: String = "File"
   }
