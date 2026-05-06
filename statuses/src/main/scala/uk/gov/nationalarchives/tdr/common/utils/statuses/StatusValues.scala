@@ -11,6 +11,12 @@ object StatusValues {
       case CompletedValue.value           => CompletedValue
       case InProgressValue.value          => InProgressValue
       case FailedValue.value              => FailedValue
+      case SuccessValue.value             => SuccessValue
+      case VirusDetectedValue.value       => VirusDetectedValue
+      case NonJudgmentFormatValue.value   => NonJudgmentFormatValue
+      case MismatchValue.value            => MismatchValue
+      case ZeroByteFileValue.value        => ZeroByteFileValue
+      case MultipleFormatsValue.value     => MultipleFormatsValue
       case _                              => throw new RuntimeException(s"Invalid status value: $id")
     }
   }
@@ -29,5 +35,29 @@ object StatusValues {
 
   case object FailedValue extends StatusValue {
     val value: String = "Failed"
+  }
+
+  case object SuccessValue extends StatusValue {
+    val value: String = "Success"
+  }
+
+  case object VirusDetectedValue extends StatusValue {
+    val value: String = "VirusDetected"
+  }
+
+  case object NonJudgmentFormatValue extends StatusValue {
+    val value: String = "NonJudgmentFormat"
+  }
+
+  case object MismatchValue extends StatusValue {
+    val value: String = "Mismatch"
+  }
+
+  case object ZeroByteFileValue extends StatusValue {
+    val value: String = "ZeroByteFile"
+  }
+
+  case object MultipleFormatsValue extends StatusValue {
+    val value: String = "MultipleFormats"
   }
 }

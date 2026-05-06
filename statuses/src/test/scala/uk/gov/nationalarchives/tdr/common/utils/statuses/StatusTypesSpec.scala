@@ -8,9 +8,25 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
 class StatusTypesSpec extends AnyWordSpec with MockitoSugar {
   "StatusTypes" should {
     "have the correct field values" in {
+      AntivirusType.id should equal("Antivirus")
+      AntivirusType.nonJudgmentStatus shouldBe false
+      AntivirusType.fileCheckStatus shouldBe true
+
+      ChecksumMatchType.id should equal("ChecksumMatch")
+      ChecksumMatchType.nonJudgmentStatus shouldBe false
+      ChecksumMatchType.fileCheckStatus shouldBe true
+
       ClientChecksType.id should equal("ClientChecks")
       ClientChecksType.nonJudgmentStatus shouldBe false
       ClientChecksType.fileCheckStatus shouldBe false
+
+      ClientChecksumType.id should equal("ClientChecksum")
+      ClientChecksumType.nonJudgmentStatus shouldBe false
+      ClientChecksumType.fileCheckStatus shouldBe true
+
+      ClientFilePathType.id should equal("ClientFilePath")
+      ClientFilePathType.nonJudgmentStatus shouldBe false
+      ClientFilePathType.fileCheckStatus shouldBe true
 
       ConfirmTransferType.id should equal("ConfirmTransfer")
       ConfirmTransferType.nonJudgmentStatus shouldBe true
@@ -27,6 +43,10 @@ class StatusTypesSpec extends AnyWordSpec with MockitoSugar {
       ExportType.id should equal("Export")
       ExportType.nonJudgmentStatus shouldBe false
       ExportType.fileCheckStatus shouldBe false
+
+      FFIDType.id should equal("FFID")
+      FFIDType.nonJudgmentStatus shouldBe false
+      FFIDType.fileCheckStatus shouldBe true
 
       MetadataReviewType.id should equal("MetadataReview")
       MetadataReviewType.nonJudgmentStatus shouldBe true
@@ -64,10 +84,16 @@ class StatusTypesSpec extends AnyWordSpec with MockitoSugar {
 
   "toStatusType" should {
     "return the correct 'status type' based on input string" in {
+      toStatusType("Antivirus") shouldBe AntivirusType
+      toStatusType("ChecksumMatch") shouldBe ChecksumMatchType
       toStatusType("ClientChecks") shouldBe ClientChecksType
+      toStatusType("ClientChecksum") shouldBe ClientChecksumType
+      toStatusType("ClientFilePath") shouldBe ClientFilePathType
       toStatusType("ConfirmTransfer") shouldBe ConfirmTransferType
       toStatusType("DraftMetadata") shouldBe DraftMetadataType
+      toStatusType("DraftMetadataUpload") shouldBe DraftMetadataUploadType
       toStatusType("Export") shouldBe ExportType
+      toStatusType("FFID") shouldBe FFIDType
       toStatusType("MetadataReview") shouldBe MetadataReviewType
       toStatusType("Series") shouldBe SeriesType
       toStatusType("ServerAntivirus") shouldBe ServerAntivirusType

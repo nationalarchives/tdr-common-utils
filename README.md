@@ -58,9 +58,11 @@ Defines case classes for inputs used to trigger TDR backend services (e.g. Step 
 
 Defines the status types and values used throughout the TDR workflow.
 
-**Status types:** `Series`, `Upload`, `TransferAgreement`, `ClientChecks`, `ServerAntivirus`, `ServerChecksum`, `ServerFFID`, `ServerRedaction`, `ConfirmTransfer`, `Export`, `DraftMetadata`, `MetadataReview`, `DraftMetadataUpload`
+**Status types:** `Antivirus`, `ChecksumMatch`, `ClientChecks`, `ClientChecksum`, `ClientFilePath`, `ConfirmTransfer`, `DraftMetadata`, `DraftMetadataUpload`, `Export`, `FFID`, `MetadataReview`, `Series`, `ServerAntivirus`, `ServerChecksum`, `ServerFFID`, `ServerRedaction`, `TransferAgreement`, `Upload`
 
-**Status values:** `Completed`, `CompletedWithIssues`, `InProgress`, `Failed`
+**Status values:** `Completed`, `CompletedWithIssues`, `Failed`, `InProgress`, `Mismatch`, `MultipleFormats`, `NonJudgmentFormat`, `Success`, `VirusDetected`, `ZeroByteFile`
+
+**Status scopes:** `File`, `Consignment`
 
 **Metadata review statuses:** `Requested`, `Rejected`, `Approved`, `Transferred`
 

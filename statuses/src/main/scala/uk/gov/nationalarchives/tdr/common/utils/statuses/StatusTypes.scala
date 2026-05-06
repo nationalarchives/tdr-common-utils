@@ -25,10 +25,40 @@ object StatusTypes {
     val fileCheckStatus: Boolean = false
   }
 
+  case object AntivirusType extends StatusType {
+    val id: String = "Antivirus"
+    val nonJudgmentStatus: Boolean = false
+    val fileCheckStatus: Boolean = true
+  }
+
+  case object ChecksumMatchType extends StatusType {
+    val id: String = "ChecksumMatch"
+    val nonJudgmentStatus: Boolean = false
+    val fileCheckStatus: Boolean = true
+  }
+
   case object ClientChecksType extends StatusType {
     val id: String = "ClientChecks"
     val nonJudgmentStatus: Boolean = false
     val fileCheckStatus: Boolean = false
+  }
+
+  case object ClientChecksumType extends StatusType {
+    val id: String = "ClientChecksum"
+    val nonJudgmentStatus: Boolean = false
+    val fileCheckStatus: Boolean = true
+  }
+
+  case object ClientFilePathType extends StatusType {
+    val id: String = "ClientFilePath"
+    val nonJudgmentStatus: Boolean = false
+    val fileCheckStatus: Boolean = true
+  }
+
+  case object FFIDType extends StatusType {
+    val id: String = "FFID"
+    val nonJudgmentStatus: Boolean = false
+    val fileCheckStatus: Boolean = true
   }
 
   case object ServerAntivirusType extends StatusType {
@@ -87,20 +117,25 @@ object StatusTypes {
 
   def toStatusType(statusType: String): StatusType = {
     statusType match {
-      case ExportType.id              => ExportType
-      case ConfirmTransferType.id     => ConfirmTransferType
-      case ServerFFIDType.id          => ServerFFIDType
-      case ServerChecksumType.id      => ServerChecksumType
-      case ServerAntivirusType.id     => ServerAntivirusType
+      case AntivirusType.id           => AntivirusType
+      case ChecksumMatchType.id       => ChecksumMatchType
       case ClientChecksType.id        => ClientChecksType
-      case UploadType.id              => UploadType
-      case TransferAgreementType.id   => TransferAgreementType
-      case SeriesType.id              => SeriesType
+      case ClientChecksumType.id      => ClientChecksumType
+      case ClientFilePathType.id      => ClientFilePathType
+      case ConfirmTransferType.id     => ConfirmTransferType
       case DraftMetadataType.id       => DraftMetadataType
-      case MetadataReviewType.id      => MetadataReviewType
-      case ServerRedactionType.id     => ServerRedactionType
       case DraftMetadataUploadType.id => DraftMetadataUploadType
-      case _                        => throw new RuntimeException(s"Invalid status type: $statusType")
+      case ExportType.id              => ExportType
+      case FFIDType.id                => FFIDType
+      case MetadataReviewType.id      => MetadataReviewType
+      case SeriesType.id              => SeriesType
+      case ServerAntivirusType.id     => ServerAntivirusType
+      case ServerChecksumType.id      => ServerChecksumType
+      case ServerFFIDType.id          => ServerFFIDType
+      case ServerRedactionType.id     => ServerRedactionType
+      case TransferAgreementType.id   => TransferAgreementType
+      case UploadType.id              => UploadType
+      case _                          => throw new RuntimeException(s"Invalid status type: $statusType")
     }
   }
 }
