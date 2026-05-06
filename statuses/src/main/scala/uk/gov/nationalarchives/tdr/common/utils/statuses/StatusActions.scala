@@ -19,19 +19,16 @@ object StatusActions {
   case class StatusAction(actionType: StatusActionType, messageKey: String)
 
   def action(statusType: StatusType, reason: StatusValue): Option[StatusAction] =
-    action(statusType, reason, None)
-
-  def action(statusType: StatusType, reason: StatusValue, puid: Option[String]): Option[StatusAction] =
     (statusType, reason) match {
       case (_, SuccessValue)    => None
       case (_, CompletedValue)  => None
       case (_, InProgressValue) => None
 
-      case (FFIDType, NonJudgmentFormatValue) => Some(StatusAction(UserFixable, ffidKey("nonJudgmentFormat", puid)))
-      case (FFIDType, ZeroByteFileValue)      => Some(StatusAction(UserFixable, ffidKey("zeroByteFile", puid)))
-      case (FFIDType, MultipleFormatsValue)   => Some(StatusAction(UserFixable, ffidKey("multipleFormats", puid)))
-      case (FFIDType, FailedValue)            => Some(StatusAction(UserFixable, ffidKey("failed", puid)))
-      case (FFIDType, CustomValue(reason))    => Some(StatusAction(UserFixable, ffidKey(reason, puid)))
+      case (FFIDType, NonJudgmentFormatValue) => Some(StatusAction(UserFixable, "ffid.nonJudgmentFormat"))
+      case (FFIDType, ZeroByteFileValue)      => Some(StatusAction(UserFixable, "ffid.zeroByteFile"))
+      case (FFIDType, MultipleFormatsValue)   => Some(StatusAction(UserFixable, "ffid.multipleFormats"))
+      case (FFIDType, FailedValue)            => Some(StatusAction(UserFixable, "ffid.failed"))
+      case (FFIDType, CustomValue(reason))    => Some(StatusAction(UserFixable, s"ffid.$reason"))
 
       case (AntivirusType, VirusDetectedValue) => Some(StatusAction(UserFixable, "antivirus.virusDetected"))
       case (AntivirusType, FailedValue)        => Some(StatusAction(UserFixable, "antivirus.failed"))
@@ -50,8 +47,4 @@ object StatusActions {
 
       case (statusType, reason) => Some(StatusAction(UserFixable, s"${statusType.id.toLowerCase}.${reason.value.toLowerCase}"))
     }
-
-  private def
-  ffidKey(reason: String, puid: Option[String]): String =
-    puid.map(p => s"ffid.$reason.$p").getOrElse(s"ffid.$reason")
 }
