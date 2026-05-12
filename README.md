@@ -32,11 +32,12 @@ Provides a generic `Authorisation` trait and a concrete `ConsignmentAuthorisatio
 Parses AWS S3 object keys into structured context objects. Supports two key formats:
 
 - **Default key:** `{consignmentId}/{object}`
-- **Upload key:** `{userId}/{assetSource}/{consignmentId}/{objectCategory}/{object}`
+- **Upload bucket key:** `{userId}/{assetSource}/{consignmentId}/{objectCategory}/{object}`
+- **Export bucket keys:** `{asset id}.metadata`; or `{asset id}/{object}`
 
 **Key types:**
 
-- `ObjectKeyContext` — case class containing parsed key fields (`userId`, `transferId`, `assetSource`, `category`, `objectType`, `objectName`)
+- `ObjectKeyContext` — case class containing parsed key fields (`userId`, `transferId`, `assetSource`, `category`, `objectType`, `objectName`, `assetId`, `fileId`)
 - `ObjectTypes` — `Csv`, `Error`, `Metadata`, `Record`
 - `ObjectCategories` — `DryRunMetadata`, `Metadata`, `Records`
 - `AssetSources` — `Droid`, `HardDrive`, `NetworkDrive`, `SharePoint`
