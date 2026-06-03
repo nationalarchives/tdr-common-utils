@@ -75,15 +75,12 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusActions._
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 
-action(FFIDType, ZeroByteFileValue)
-// Some(StatusAction(UserFixable, "ffid.zeroByteFile"))
+action(FFIDType, ZeroByteFileValue) returns  Some(StatusAction(UserFixable, "ffid.zeroByteFile"))
 
-action(FFIDType, CustomValue("PasswordProtected"))
-// Some(StatusAction(UserFixable, "ffid.passwordProtected"))
-// CustomValue reason comes from the disallowed PUIDs "reason" field in da-metadata-schema
+// CustomValue reason could come from the disallowed PUIDs "reason" field in da-metadata-schema
+action(FFIDType, CustomValue("PasswordProtected")) returns  Some(StatusAction(UserFixable, "ffid.passwordProtected"))
 
-action(FFIDType, SuccessValue)
-// None (not a failure)
+action(FFIDType, SuccessValue) returns None (not a failure)
 ```
 
 Returns `None` for non-failure statuses (Success, Completed, InProgress) and `Some(StatusAction(actionType, messageKey))` for failures.
