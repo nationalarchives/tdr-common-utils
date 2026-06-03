@@ -7,6 +7,7 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues.{Completed
 private object UploadState extends TransferState {
   override def checkState(stateChange: StateChange, state: List[ConsignmentStatuses]): StateChangeResult = {
     val uploadState: Option[ConsignmentStatuses] = state.find(_.statusType == UploadType.id)
+
     stateChange.statusValue match {
       case InProgressValue if uploadState.isEmpty => Allow
       case CompletedValue if uploadState.nonEmpty && uploadState.get.value == InProgressValue.value => Allow
