@@ -4,40 +4,51 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 
 object StatusActions {
+  private val wordPattern = "[A-Z]+(?=[A-Z][a-z]|\\b)|[A-Z]?[a-z]+|\\d+".r
+  private val ffidUserFixableCustomReasons = Set("Zip", "PasswordProtected", "Executable", "Template", "Shortcut", "OperatingSystemMac")
+
+  private def toCamelCase(value: String): String = {
+    val words = wordPattern.findAllIn(value).toList
+    words match {
+      case Nil => value
+      case head :: tail => head.toLowerCase + tail.map(word => word.toLowerCase.capitalize).mkString
+    }
+  }
+
+  private def messageKey(statusType: StatusType, reason: StatusValue): String =
+    s"${toCamelCase(statusType.id)}.${toCamelCase(reason.value)}"
+
+  private def statusAction(actionType: StatusActionType, statusType: StatusType, reason: StatusValue): Some[StatusAction] =
+    Some(StatusAction(actionType, messageKey(statusType, reason)))
+
   def action(statusType: StatusType, reason: StatusValue): Option[StatusAction] =
     (statusType, reason) match {
       case (_, SuccessValue) => None
       case (_, CompletedValue) => None
       case (_, InProgressValue) => None
 
-      case (FFIDType, NonJudgmentFormatValue) => Some(StatusAction(UserFixable, "ffid.nonJudgmentFormat"))
-      case (FFIDType, ZeroByteFileValue) => Some(StatusAction(UserFixable, "ffid.zeroByteFile"))
-      case (FFIDType, MultipleFormatsValue) => Some(StatusAction(TNASupport, "ffid.multipleFormats"))
-      case (FFIDType, FailedValue) => Some(StatusAction(TNASupport, "ffid.failed"))
-      // Custom values come fro disallowed Puids in da-metadata-schema
-      case (FFIDType, CustomValue("Unidentified")) => Some(StatusAction(TNASupport, "ffid.unidentified"))
-      case (FFIDType, CustomValue("Zip")) => Some(StatusAction(UserFixable, s"ffid.zip"))
-      case (FFIDType, CustomValue("PasswordProtected")) => Some(StatusAction(UserFixable, s"ffid.passwordProtected"))
-      case (FFIDType, CustomValue("Executable")) => Some(StatusAction(UserFixable, s"ffid.executable"))
-      case (FFIDType, CustomValue("Template")) => Some(StatusAction(UserFixable, s"ffid.template"))
-      case (FFIDType, CustomValue("Shortcut")) => Some(StatusAction(UserFixable, s"ffid.shortcut"))
-      case (FFIDType, CustomValue("OperatingSystemMac")) => Some(StatusAction(UserFixable, s"ffid.operatingSystemMac"))
-      case (FFIDType, CustomValue(reason)) => Some(StatusAction(TNASupport, s"ffid.$reason"))
+      case (FFIDType, NonJudgmentFormatValue) => statusAction(UserFixable, FFIDType, NonJudgmentFormatValue)
+      case (FFIDType, ZeroByteFileValue) => statusAction(UserFixable, FFIDType, ZeroByteFileValue)
+      case (FFIDType, MultipleFormatsValue) => statusAction(TNASupport, FFIDType, MultipleFormatsValue)
+      case (FFIDType, FailedValue) => statusAction(TNASupport, FFIDType, FailedValue)
+      // Custom values come from disallowed Puids in da-metadata-schema
+      case (FFIDType, customValue @ CustomValue("Unidentified")) => statusAction(TNASupport, FFIDType, customValue)
+      case (FFIDType, customValue @ CustomValue(reason)) if ffidUserFixableCustomReasons.contains(reason) => statusAction(UserFixable, FFIDType, customValue)
+      case (FFIDType, customValue @ CustomValue(_)) => statusAction(TNASupport, FFIDType, customValue)
 
-      case (AntivirusType, VirusDetectedValue) => Some(StatusAction(TNASupport, "antivirus.virusDetected"))
-      case (AntivirusType, FailedValue) => Some(StatusAction(TNASupport, "antivirus.failed"))
-      case (ChecksumMatchType, MismatchValue) => Some(StatusAction(TNASupport, "checksumMatch.mismatch"))
-      case (ChecksumMatchType, FailedValue) => Some(StatusAction(TNASupport, "checksumMatch.failed"))
-      case (ClientChecksumType, FailedValue) => Some(StatusAction(TNASupport, "clientChecksum.failed"))
-      case (ClientFilePathType, FailedValue) => Some(StatusAction(TNASupport, "clientFilePath.failed"))
+      case (AntivirusType, VirusDetectedValue) => statusAction(TNASupport, AntivirusType, VirusDetectedValue)
+      case (AntivirusType, FailedValue) => statusAction(TNASupport, AntivirusType, FailedValue)
+      case (ChecksumMatchType, MismatchValue) => statusAction(TNASupport, ChecksumMatchType, MismatchValue)
+      case (ChecksumMatchType, FailedValue) => statusAction(TNASupport, ChecksumMatchType, FailedValue)
+      case (ClientChecksumType, FailedValue) => statusAction(TNASupport, ClientChecksumType, FailedValue)
+      case (ClientFilePathType, FailedValue) => statusAction(TNASupport, ClientFilePathType, FailedValue)
 
-      case (RedactionType, SuccessValue) => None
-      case (RedactionType, NoOriginalFileValue) => Some(StatusAction(UserFixable, "redaction.noOriginalFile"))
-      case (RedactionType, AmbiguousOriginalFileValue) => Some(StatusAction(UserFixable, "redaction.ambiguousOriginalFile"))
-      case (RedactionType, DuplicateFileNameValue) => Some(StatusAction(UserFixable, "redaction.duplicateFileName"))
-      case (RedactionType, _) => Some(StatusAction(TNASupport, "redaction.failed"))
+      case (RedactionType, NoOriginalFileValue) => statusAction(UserFixable, RedactionType, NoOriginalFileValue)
+      case (RedactionType, AmbiguousOriginalFileValue) => statusAction(UserFixable, RedactionType, AmbiguousOriginalFileValue)
+      case (RedactionType, DuplicateFileNameValue) => statusAction(UserFixable, RedactionType, DuplicateFileNameValue)
+      case (RedactionType, _) => statusAction(TNASupport, RedactionType, FailedValue)
 
-      case (statusType, reason) => Some(StatusAction(TNASupport, s"${statusType.id.toLowerCase}.${reason.value.toLowerCase}"))
+      case (statusType, reason) => statusAction(TNASupport, statusType, reason)
     }
 
   sealed trait StatusActionType {

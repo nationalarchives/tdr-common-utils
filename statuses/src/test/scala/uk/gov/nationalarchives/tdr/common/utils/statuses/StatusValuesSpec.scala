@@ -41,7 +41,7 @@ class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
       StatusValue.apply("DuplicateFileName") shouldBe DuplicateFileNameValue
     }
 
-    "throw an exception when id is unrecognised" in {
+    "create Custom StatusValue from String" in {
       val result = StatusValue.apply("SomeDynamicReason")
       result shouldBe CustomValue("SomeDynamicReason")
       result.value should equal("SomeDynamicReason")

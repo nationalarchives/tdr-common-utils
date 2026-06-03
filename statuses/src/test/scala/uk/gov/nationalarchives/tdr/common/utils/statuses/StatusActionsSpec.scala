@@ -84,9 +84,9 @@ class StatusActionsSpec extends AnyWordSpec with MockitoSugar {
       action(RedactionType, SuccessValue) shouldBe None
     }
 
-    "return TNASupport is server checksum Failed" in {
+    "return TNASupport if server checksum Failed" in {
       val result = action(ServerChecksumType, FailedValue)
-      result shouldBe Some(StatusAction(TNASupport, "serverchecksum.failed"))
+      result shouldBe Some(StatusAction(TNASupport, "serverChecksum.failed"))
     }
 
     "have correct string values for action types" in {
