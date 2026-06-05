@@ -5,7 +5,7 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues.{CompletedValue, CompletedWithIssuesValue, FailedValue, InProgressValue}
 
 private object ExportState extends TransferState {
-  private val requiredStates = Set(
+  private val requiredStatuses = Set(
     UploadType,
     ClientChecksType,
     ServerFFIDType,
@@ -18,17 +18,19 @@ private object ExportState extends TransferState {
     MetadataReviewType
   )
 
-  override def checkState(stateChange: StateChange, state: List[ConsignmentStatuses]): StateChangeResult = {
-    val allStatesPresent: Boolean = requiredStates.map(_.id).exists(t => state.map(_.statusType).exists(t.contains))
-    val allStatesCompleted: Boolean = state.forall(_.value == CompletedValue.value)
-    val exportState: Option[ConsignmentStatuses] = state.find(_.statusType == ExportType.id)
+  private lazy val requiredStatusIds = requiredStatuses.map(_.id)
+
+  override def checkStateChange(stateChange: StateChange, state: List[ConsignmentStatuses]): Either[StateException, Boolean] = {
+    val requiredStatuses = state.filter(s => requiredStatusIds.contains(s.statusType))
+    val requiredStatusesPresent: Boolean = requiredStatusIds.forall(state.map(_.statusType).contains)
+    val requiredStatusesCompleted: Boolean = requiredStatuses.forall(_.value == CompletedValue.value)
+    val exportStatus: Option[ConsignmentStatuses] = state.find(_.statusType == ExportType.id)
 
     stateChange.statusValue match {
-      case InProgressValue if allStatesPresent && allStatesCompleted && exportState.isEmpty => Allow
+      case InProgressValue if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.isEmpty => Right(true)
       case CompletedValue | CompletedWithIssuesValue | FailedValue
-        if allStatesPresent && allStatesCompleted && exportState.nonEmpty && exportState.get.value == InProgressValue.value => Allow
-      case _ => Deny
+        if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.nonEmpty && exportStatus.get.value == InProgressValue.value => Right(true)
+      case _ => Left(StateChangeException(s"${ExportType.id} state change ${stateChange.statusValue.value} for ${stateChange.consignmentId} not allowed"))
     }
-
   }
 }

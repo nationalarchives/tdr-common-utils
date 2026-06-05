@@ -1,50 +1,71 @@
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor3}
-import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.UploadType
+import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor4}
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{StatusType, UploadType}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 import uk.gov.nationalarchives.tdr.common.utils.transferstatecontrol._
 
 import java.util.UUID
 
 class UploadStateSpec extends SpecUtils with TableDrivenPropertyChecks {
-  private val uploadStatusInProgress = ConsignmentStatuses(UUID.randomUUID(), consignmentId, UploadType.id, InProgressValue.value, someDateTime, None)
-  private val uploadStatusCompleted = ConsignmentStatuses(UUID.randomUUID(), consignmentId, UploadType.id, CompletedValue.value, someDateTime, None)
-  private val uploadStatusCompletedWithIssues = ConsignmentStatuses(UUID.randomUUID(), consignmentId, UploadType.id, CompletedWithIssuesValue.value, someDateTime, None)
-  private val uploadStatusFailed = ConsignmentStatuses(UUID.randomUUID(), consignmentId, UploadType.id, FailedValue.value, someDateTime, None)
+  private def setCurrentState(uploadStatusValue: StatusValue) =
+    List(ConsignmentStatuses(UUID.randomUUID(), consignmentId, UploadType.id, uploadStatusValue.value, someDateTime, None))
 
-  private val uploadStatusInputs: TableFor3[StateChange, List[ConsignmentStatuses], StateChangeResult] = Table(
-    ("stateChange", "currentState", "expectedResult"),
-    (StateChange(consignmentId, UploadType, InProgressValue), Nil, Allow),
-    (StateChange(consignmentId, UploadType, InProgressValue), List(uploadStatusInProgress), Deny),
-    (StateChange(consignmentId, UploadType, InProgressValue), List(uploadStatusCompleted), Deny),
-    (StateChange(consignmentId, UploadType, InProgressValue), List(uploadStatusCompletedWithIssues), Deny),
-    (StateChange(consignmentId, UploadType, InProgressValue), List(uploadStatusFailed), Deny),
-    (StateChange(consignmentId, UploadType, CompletedValue), Nil, Deny),
-    (StateChange(consignmentId, UploadType, CompletedValue), List(uploadStatusInProgress), Allow),
-    (StateChange(consignmentId, UploadType, CompletedValue), List(uploadStatusCompleted), Deny),
-    (StateChange(consignmentId, UploadType, CompletedValue), List(uploadStatusCompletedWithIssues), Deny),
-    (StateChange(consignmentId, UploadType, CompletedValue), List(uploadStatusFailed), Deny),
-    (StateChange(consignmentId, UploadType, CompletedWithIssuesValue), Nil, Deny),
-    (StateChange(consignmentId, UploadType, CompletedWithIssuesValue), List(uploadStatusInProgress), Allow),
-    (StateChange(consignmentId, UploadType, CompletedWithIssuesValue), List(uploadStatusCompleted), Deny),
-    (StateChange(consignmentId, UploadType, CompletedWithIssuesValue), List(uploadStatusCompletedWithIssues), Deny),
-    (StateChange(consignmentId, UploadType, CompletedWithIssuesValue), List(uploadStatusFailed), Deny),
-    (StateChange(consignmentId, UploadType, FailedValue), Nil, Deny),
-    (StateChange(consignmentId, UploadType, FailedValue), List(uploadStatusInProgress), Deny),
-    (StateChange(consignmentId, UploadType, FailedValue), List(uploadStatusCompleted), Deny),
-    (StateChange(consignmentId, UploadType, FailedValue), List(uploadStatusCompletedWithIssues), Deny),
-    (StateChange(consignmentId, UploadType, FailedValue), List(uploadStatusFailed), Deny),
+  private def setStateChange(statusValue: StatusValue) = StateChange(consignmentId, UploadType, statusValue)
+  private def expectedErrorMessage(value: StatusValue) = s"Upload state change ${value.value} for $consignmentId not allowed"
+
+  private val uploadStatusInputs: TableFor4[StatusValue, List[ConsignmentStatuses], String, Either[StateChangeException, Boolean]] = Table(
+    ("stateChangeValue", "currentState", "currentStateDescription", "expectedResult"),
+    //InProgress state change
+    (InProgressValue, Nil, "no current state", Right(true)),
+    (InProgressValue, setCurrentState(InProgressValue), s"upload status: ${InProgressValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    (InProgressValue, setCurrentState(CompletedValue), s"upload status: ${CompletedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    (InProgressValue, setCurrentState(CompletedWithIssuesValue), s"upload status: ${CompletedWithIssuesValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    (InProgressValue, setCurrentState(FailedValue), s"upload status: ${FailedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    //Completed state change
+    (CompletedValue, Nil, "no current state", Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
+    (CompletedValue, setCurrentState(InProgressValue), s"upload status: ${InProgressValue.value}", Right(true)),
+    (CompletedValue, setCurrentState(CompletedValue), s"upload status: ${CompletedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
+    (CompletedValue, setCurrentState(CompletedWithIssuesValue), s"upload status: ${CompletedWithIssuesValue.value}",
+      Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
+    (CompletedValue, setCurrentState(FailedValue), s"upload status: ${FailedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
+    //CompletedWithIssues state change
+    (CompletedWithIssuesValue, Nil, "no current state",
+      Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
+    (CompletedWithIssuesValue, setCurrentState(InProgressValue), s"upload status: ${InProgressValue.value}", Right(true)),
+    (CompletedWithIssuesValue, setCurrentState(CompletedValue), s"upload status: ${CompletedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
+    (CompletedWithIssuesValue, setCurrentState(CompletedWithIssuesValue), s"upload status: ${CompletedWithIssuesValue.value}",
+      Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
+    (CompletedWithIssuesValue, setCurrentState(FailedValue), s"upload status: ${FailedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
+    //Failed state change
+    (FailedValue, Nil, "no current state",
+      Left(StateChangeException(expectedErrorMessage(FailedValue)))),
+    (FailedValue, setCurrentState(InProgressValue), s"upload status: ${InProgressValue.value}", Right(true)),
+    (FailedValue,
+      setCurrentState(CompletedValue), s"upload status: ${CompletedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(FailedValue)))),
+    (FailedValue,
+      setCurrentState(CompletedWithIssuesValue), s"upload status: ${CompletedWithIssuesValue.value}",
+      Left(StateChangeException(expectedErrorMessage(FailedValue)))),
+    (FailedValue, setCurrentState(FailedValue), s"upload status: ${FailedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(FailedValue)))),
   )
 
   forAll(uploadStatusInputs) {
-    (stateChange, currentState, expectedResult) =>
+    (stateChangeValue, currentState, currentStateDescription, expectedResult) =>
     {
-      s"for state change: ${stateChange.statusType} and ${stateChange.statusValue} with current state of: ${currentState.headOption.getOrElse("None")}" should s"return $expectedResult" in {
-        val result = TransferStateControl.changeTransferState(stateChange, currentState)
+      s"for state change: ${stateChangeValue.value} with current state of: $currentStateDescription" should s"return $expectedResult" in {
+        val result = TransferStateControl.transferStateChangeValid(setStateChange(stateChangeValue), currentState)
         result shouldBe expectedResult
       }
     }
   }
-
 }

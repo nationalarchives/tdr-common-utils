@@ -7,19 +7,31 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues.StatusValu
 import java.util.UUID
 
 trait TransferState {
-  def checkState(stateChange: StateChange, state: List[ConsignmentStatuses]): StateChangeResult
+  def checkStateChange(stateChange: StateChange, state: List[ConsignmentStatuses]): Either[StateException, Boolean]
 }
 
 case class StateChange(consignmentId: UUID, statusType: StatusType, statusValue: StatusValue)
 
-sealed trait StateChangeResult {
+//case class StateException(message: String) extends Exception(message)
+
+trait StateException extends Exception
+
+case class StateChangeException(message: String) extends StateException
+
+case class TransferStateException(message: String) extends StateException
+
+sealed trait CheckStateChangeResult {
   val id: String
 }
 
-case object Allow extends StateChangeResult {
-  val id: String = "Allow"
+case object Valid extends CheckStateChangeResult {
+  val id: String = "Valid"
 }
 
-case object Deny extends StateChangeResult {
-  val id: String = "Deny"
+case object Invalid extends CheckStateChangeResult {
+  val id: String = "Invalid"
+}
+
+object TransferStateErrorCodes {
+  val invalidConsignmentState = "INVALID_CONSIGNMENT_STATE"
 }
