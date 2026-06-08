@@ -3,7 +3,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor4}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{StatusType, UploadType}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
-import uk.gov.nationalarchives.tdr.common.utils.transferstatecontrol._
+import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
 import java.util.UUID
 

@@ -91,7 +91,7 @@ lazy val statuses = (project in file("statuses"))
     libraryDependencies ++= Seq()
   )
 
-lazy val transferStateControl = (project in file("transferstatecontrol"))
+lazy val stateControl = (project in file("statecontrol"))
   .settings(commonSettings).settings(
     name := "tdr-state-control",
     description := "A project to check TDR transfer state",
@@ -107,4 +107,4 @@ lazy val root = (project in file("."))
   .settings(
     name := "tdr-common-utils",
     publish / skip := true
-  ).aggregate(authorisation, objectKeyContext, serviceInputs, statuses, transferStateControl)
+  ).aggregate(authorisation, objectKeyContext, serviceInputs, statuses, stateControl)

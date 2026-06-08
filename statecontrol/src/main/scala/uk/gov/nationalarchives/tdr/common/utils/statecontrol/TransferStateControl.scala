@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.tdr.common.utils.transferstatecontrol
+package uk.gov.nationalarchives.tdr.common.utils.statecontrol
 
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{ExportType, UploadType}
@@ -13,11 +13,24 @@ object TransferStateControl {
     }
   }
 
-  def transferStateChangeValid(stateChange: StateChange, state: List[ConsignmentStatuses]): Either[StateException, Boolean] = {
-    val stateConsignmentIds = state.map(_.consignmentId).toSet
+  /**
+   * Method to check if the given transfer's state can be changed based on it's current state
+   *
+   * @param stateChange
+   * Change of state to check
+   *
+   * @param currentState
+   * Current state of the transfer made up of it's statuses
+   *
+   * @return
+   * Either true if the state change is permitted or a state exception
+   *
+   * */
+  def transferStateChangeValid(stateChange: StateChange, currentState: List[ConsignmentStatuses]): Either[StateException, Boolean] = {
+    val stateConsignmentIds = currentState.map(_.consignmentId).toSet
     stateConsignmentIds.size match {
-      case 0 => checkChange(stateChange, state)
-      case 1 if stateConsignmentIds.head == stateChange.consignmentId => checkChange(stateChange, state)
+      case 0 => checkChange(stateChange, currentState)
+      case 1 if stateConsignmentIds.head == stateChange.consignmentId => checkChange(stateChange, currentState)
       case _ => Left(StateChangeException("Request contains mismatched consignment ids"))
     }
   }

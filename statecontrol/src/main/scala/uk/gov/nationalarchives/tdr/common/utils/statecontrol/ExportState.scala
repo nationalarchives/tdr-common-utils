@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.tdr.common.utils.transferstatecontrol
+package uk.gov.nationalarchives.tdr.common.utils.statecontrol
 
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
@@ -29,7 +29,7 @@ private object ExportState extends TransferState {
     stateChange.statusValue match {
       case InProgressValue if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.isEmpty => Right(true)
       case CompletedValue | CompletedWithIssuesValue | FailedValue
-        if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.nonEmpty && exportStatus.get.value == InProgressValue.value => Right(true)
+        if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.exists(_.value == InProgressValue.value) => Right(true)
       case _ => Left(StateChangeException(s"${ExportType.id} state change ${stateChange.statusValue.value} for ${stateChange.consignmentId} not allowed"))
     }
   }

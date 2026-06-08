@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.tdr.common.utils.transferstatecontrol
+package uk.gov.nationalarchives.tdr.common.utils.statecontrol
 
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.UploadType
@@ -10,11 +10,11 @@ private object UploadState extends TransferState {
 
     stateChange.statusValue match {
       case InProgressValue if uploadStatus.isEmpty => Right(true)
-      case CompletedValue | CompletedWithIssuesValue | FailedValue if uploadStatus.nonEmpty && uploadStatus.get.value == InProgressValue.value => Right(true)
-      case CompletedWithIssuesValue if uploadStatus.nonEmpty && uploadStatus.get.value == InProgressValue.value => Right(true)
+      case CompletedValue | CompletedWithIssuesValue | FailedValue
+        if uploadStatus.nonEmpty && uploadStatus.get.value == InProgressValue.value => Right(true)
+      case CompletedWithIssuesValue if uploadStatus.exists(_.value == InProgressValue.value) => Right(true)
       case _ =>
-        val errorMes = s"${UploadType.id} state change ${stateChange.statusValue.value} for ${stateChange.consignmentId} not allowed"
-        Left(StateChangeException(errorMes))
+        Left(StateChangeException(s"${UploadType.id} state change ${stateChange.statusValue.value} for ${stateChange.consignmentId} not allowed"))
     }
   }
 }

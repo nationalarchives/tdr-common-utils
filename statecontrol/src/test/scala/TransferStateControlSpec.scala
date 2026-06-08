@@ -2,7 +2,7 @@ import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.UploadType
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues.{CompletedValue, InProgressValue}
-import uk.gov.nationalarchives.tdr.common.utils.transferstatecontrol._
+import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
 import java.util.UUID
 

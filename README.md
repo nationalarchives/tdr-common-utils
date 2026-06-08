@@ -8,12 +8,13 @@ This is a multi-module [sbt](https://www.scala-sbt.org/) project written in Scal
 
 ## Modules
 
-| Module | Artifact | Description |
-|---|---|---|
-| [authorisation](#authorisation) | `tdr-authorisation` | Authorisation logic for TDR transfers |
-| [objectkeycontext](#object-key-context) | `tdr-object-key-context` | S3 object key parsing and context extraction |
-| [serviceinputs](#service-inputs) | `tdr-service-inputs` | Input models for triggering TDR services |
-| [statuses](#statuses) | `tdr-statuses` | Status type and value definitions for TDR workflows |
+| Module | Artifact | Description                                                              |
+|---|---|--------------------------------------------------------------------------|
+| [authorisation](#authorisation) | `tdr-authorisation` | Authorisation logic for TDR transfers                                    |
+| [objectkeycontext](#object-key-context) | `tdr-object-key-context` | S3 object key parsing and context extraction                             |
+| [serviceinputs](#service-inputs) | `tdr-service-inputs` | Input models for triggering TDR services                                 |
+| [statuses](#statuses) | `tdr-statuses` | Status type and value definitions for TDR workflows                      |
+| [statecontrol](#state-control) | `tdr-state-control` | Business logic for checking whether a consignment's state can be changed | 
 
 ### Authorisation
 
@@ -98,6 +99,10 @@ action.reviewStatus         // MetadataReviewStatus.Requested
 action.reviewStatus.value   // "Requested"
 ```
 
+### State Control
+
+Contains business logic on whether the state of a consignment can be changed to a given new state.
+
 ## Prerequisites
 
 - **Java** 11+
@@ -132,10 +137,11 @@ The snapshot version can then be imported into local development environments.
 Add the relevant module as a dependency in your `build.sbt`:
 
 ```scala
-libraryDependencies += "uk.gov.nationalarchives" %% "tdr-authorisation"     % "<version>"
-libraryDependencies += "uk.gov.nationalarchives" %% "tdr-object-key-context" % "<version>"
-libraryDependencies += "uk.gov.nationalarchives" %% "tdr-service-inputs"    % "<version>"
-libraryDependencies += "uk.gov.nationalarchives" %% "tdr-statuses"          % "<version>"
+libraryDependencies += "uk.gov.nationalarchives" %% "tdr-authorisation"          % "<version>"
+libraryDependencies += "uk.gov.nationalarchives" %% "tdr-object-key-context"     % "<version>"
+libraryDependencies += "uk.gov.nationalarchives" %% "tdr-service-inputs"         % "<version>"
+libraryDependencies += "uk.gov.nationalarchives" %% "tdr-statuses"               % "<version>"
+libraryDependencies += "uk.gov.nationalarchives" %% "tdr-transfer-state-control" % "<version>"
 ```
 
 ## Release Process
