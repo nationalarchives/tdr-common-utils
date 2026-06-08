@@ -76,5 +76,9 @@ object StatusValues {
     val value: String = "DuplicateFileName"
   }
 
+  case object Unidentified extends StatusValue {
+    val value: String = "Unidentified"
+  }
+
   case class CustomValue(value: String) extends StatusValue
 }
