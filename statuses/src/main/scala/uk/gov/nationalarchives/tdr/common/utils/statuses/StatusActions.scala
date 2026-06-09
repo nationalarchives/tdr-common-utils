@@ -5,7 +5,7 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 
 object StatusActions {
   private val wordPattern = "[A-Z]+(?=[A-Z][a-z]|\\b)|[A-Z]?[a-z]+|\\d+".r
-  private val ffidUserFixableCustomReasons = Set("Zip", "PasswordProtected", "Executable", "Template", "Shortcut",
+  private val ffidUserFixableCustomReasons = Set("Zip", "PasswordProtected", "Executable", "Template", "Shortcut", "NonRecord",
     "OperatingSystemMac", "LicenseContainsRegistrationInformation", "Backup")
 
   private def toCamelCase(value: String): String = {
