@@ -11,8 +11,7 @@ private object UploadState extends TransferState {
     stateChange.statusValue match {
       case InProgressValue if uploadStatus.isEmpty => Right(true)
       case CompletedValue | CompletedWithIssuesValue | FailedValue
-        if uploadStatus.nonEmpty && uploadStatus.get.value == InProgressValue.value => Right(true)
-      case CompletedWithIssuesValue if uploadStatus.exists(_.value == InProgressValue.value) => Right(true)
+        if uploadStatus.exists(_.value == InProgressValue.value) => Right(true)
       case _ =>
         Left(StateChangeException(s"${UploadType.id} state change ${stateChange.statusValue.value} for ${stateChange.consignmentId} not allowed"))
     }
