@@ -59,9 +59,32 @@ Defines case classes for inputs used to trigger TDR backend services (e.g. Step 
 
 Defines the status types and values used throughout the TDR workflow.
 
-**Status types:** `Series`, `Upload`, `TransferAgreement`, `ClientChecks`, `ServerAntivirus`, `ServerChecksum`, `ServerFFID`, `ServerRedaction`, `ConfirmTransfer`, `Export`, `DraftMetadata`, `MetadataReview`, `DraftMetadataUpload`
+**Status types:** `Antivirus`, `ChecksumMatch`, `ClientChecks`, `ClientChecksum`, `ClientFilePath`, `ConfirmTransfer`, `DraftMetadata`, `DraftMetadataUpload`, `Export`, `FFID`, `MetadataReview`, `Redaction`, `Series`, `ServerAntivirus`, `ServerChecksum`, `ServerFFID`, `ServerRedaction`, `TransferAgreement`, `Upload`
 
-**Status values:** `Completed`, `CompletedWithIssues`, `InProgress`, `Failed`
+**Status values:** `AmbiguousOriginalFile`, `Completed`, `CompletedWithIssues`, `DuplicateFileName`, `Failed`, `InProgress`, `Mismatch`, `MultipleFormats`, `NoOriginalFile`, `NonJudgmentFormat`, `Success`, `VirusDetected`, `ZeroByteFile`
+
+Unrecognised strings are wrapped in `CustomValue(reason)` to support dynamic values (e.g. disallowed PUID reasons from the [da-metadata-schema](https://github.com/nationalarchives/da-metadata-schema) repository).
+
+**Status scopes:** `File`, `Consignment`
+
+**Status actions:** `UserFixable`, `TNASupport`
+
+The `StatusActions` object maps a `(StatusType, StatusValue)` pair to an optional `StatusAction` containing the action type and a message key for use with `message.properties`:
+
+```scala
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusActions._
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
+
+action(FFIDType, ZeroByteFileValue) returns  Some(StatusAction(UserFixable, "ffid.zeroByteFile"))
+
+// CustomValue reason could come from the disallowed PUIDs "reason" field in da-metadata-schema
+action(FFIDType, CustomValue("PasswordProtected")) returns  Some(StatusAction(UserFixable, "ffid.passwordProtected"))
+
+action(FFIDType, SuccessValue) returns None (not a failure)
+```
+
+Returns `None` for non-failure statuses (Success, Completed, InProgress) and `Some(StatusAction(actionType, messageKey))` for failures.
 
 **Metadata review statuses:** `Requested`, `Rejected`, `Approved`, `Transferred`
 
