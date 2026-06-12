@@ -92,13 +92,13 @@ lazy val statuses = (project in file("statuses"))
   )
 
 lazy val stateControl = (project in file("statecontrol"))
+  .dependsOn(statuses % "test->test;compile->compile")
   .settings(commonSettings).settings(
     name := "tdr-state-control",
     description := "A project to check TDR transfer state",
     libraryDependencies ++= Seq(
       generatedGraphql,
-      tdrAuthUtils,
-      tdrStatuses
+      tdrAuthUtils
     )
   )
 

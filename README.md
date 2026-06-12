@@ -164,7 +164,7 @@ libraryDependencies += "uk.gov.nationalarchives" %% "tdr-authorisation"         
 libraryDependencies += "uk.gov.nationalarchives" %% "tdr-object-key-context"     % "<version>"
 libraryDependencies += "uk.gov.nationalarchives" %% "tdr-service-inputs"         % "<version>"
 libraryDependencies += "uk.gov.nationalarchives" %% "tdr-statuses"               % "<version>"
-libraryDependencies += "uk.gov.nationalarchives" %% "tdr-state-control" % "<version>"
+libraryDependencies += "uk.gov.nationalarchives" %% "tdr-state-control"          % "<version>"
 ```
 
 ## Release Process
