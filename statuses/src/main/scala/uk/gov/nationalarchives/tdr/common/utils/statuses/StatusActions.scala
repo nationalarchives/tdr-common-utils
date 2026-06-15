@@ -5,7 +5,8 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 
 object StatusActions {
   private val wordPattern = "[A-Z]+(?=[A-Z][a-z]|\\b)|[A-Z]?[a-z]+|\\d+".r
-  private val ffidUserFixableCustomReasons = Set("Zip", "PasswordProtected", "Executable", "Template", "Shortcut", "OperatingSystemMac")
+  private val ffidUserFixableCustomReasons = Set("Zip", "PasswordProtected", "Executable", "Template", "Shortcut", "NonRecord",
+    "OperatingSystemMac", "LicenseContainsRegistrationInformation", "Backup")
 
   private def toCamelCase(value: String): String = {
     val words = wordPattern.findAllIn(value).toList
@@ -31,8 +32,8 @@ object StatusActions {
       case (FFIDType, ZeroByteFileValue) => statusAction(UserFixable, FFIDType, ZeroByteFileValue)
       case (FFIDType, MultipleFormatsValue) => statusAction(TNASupport, FFIDType, MultipleFormatsValue)
       case (FFIDType, FailedValue) => statusAction(TNASupport, FFIDType, FailedValue)
+      case (FFIDType, Unidentified) => statusAction(TNASupport, FFIDType, Unidentified)
       // Custom values come from disallowed Puids in da-metadata-schema
-      case (FFIDType, customValue @ CustomValue("Unidentified")) => statusAction(TNASupport, FFIDType, customValue)
       case (FFIDType, customValue @ CustomValue(reason)) if ffidUserFixableCustomReasons.contains(reason) => statusAction(UserFixable, FFIDType, customValue)
       case (FFIDType, customValue @ CustomValue(_)) => statusAction(TNASupport, FFIDType, customValue)
 

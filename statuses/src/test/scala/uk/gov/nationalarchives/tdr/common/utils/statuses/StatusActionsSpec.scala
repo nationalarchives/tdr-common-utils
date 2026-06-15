@@ -31,7 +31,7 @@ class StatusActionsSpec extends AnyWordSpec with MockitoSugar {
     }
 
     "return TNASupport when FFID Unidentified" in {
-      action(FFIDType, CustomValue("Unidentified")) shouldBe Some(StatusAction(TNASupport, "ffid.unidentified"))
+      action(FFIDType, Unidentified) shouldBe Some(StatusAction(TNASupport, "ffid.unidentified"))
     }
 
     "return UserFixable when FFID Executable" in {

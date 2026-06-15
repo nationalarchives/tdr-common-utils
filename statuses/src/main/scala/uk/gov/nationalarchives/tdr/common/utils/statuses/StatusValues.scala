@@ -20,6 +20,7 @@ object StatusValues {
       case NoOriginalFileValue.value        => NoOriginalFileValue
       case AmbiguousOriginalFileValue.value => AmbiguousOriginalFileValue
       case DuplicateFileNameValue.value     => DuplicateFileNameValue
+      case SkippedValue.value               => SkippedValue
       case other                            => CustomValue(other)
     }
   }
@@ -74,6 +75,14 @@ object StatusValues {
 
   case object DuplicateFileNameValue extends StatusValue {
     val value: String = "DuplicateFileName"
+  }
+
+  case object SkippedValue extends StatusValue {
+    val value: String = "Skipped"
+  }
+
+  case object Unidentified extends StatusValue {
+    val value: String = "Unidentified"
   }
 
   case class CustomValue(value: String) extends StatusValue

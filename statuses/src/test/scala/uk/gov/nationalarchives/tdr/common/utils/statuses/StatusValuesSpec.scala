@@ -21,6 +21,7 @@ class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
       NoOriginalFileValue.value should equal("NoOriginalFile")
       AmbiguousOriginalFileValue.value should equal("AmbiguousOriginalFile")
       DuplicateFileNameValue.value should equal("DuplicateFileName")
+      SkippedValue.value should equal("Skipped")
     }
   }
 
@@ -39,6 +40,7 @@ class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
       StatusValue.apply("NoOriginalFile") shouldBe NoOriginalFileValue
       StatusValue.apply("AmbiguousOriginalFile") shouldBe AmbiguousOriginalFileValue
       StatusValue.apply("DuplicateFileName") shouldBe DuplicateFileNameValue
+      StatusValue.apply("Skipped") shouldBe SkippedValue
     }
 
     "create Custom StatusValue from String" in {
