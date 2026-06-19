@@ -74,6 +74,13 @@ lazy val objectKeyContext = (project in file("objectkeycontext"))
     libraryDependencies ++= Seq()
   )
 
+lazy val records = (project in file("records"))
+  .settings(commonSettings).settings(
+    name := "tdr-records",
+    description := "A project containing common functions for records",
+    libraryDependencies ++= Seq()
+  )
+
 lazy val serviceInputs = (project in file("serviceinputs"))
   .settings(commonSettings).settings(
     name := "tdr-service-inputs",
@@ -96,4 +103,4 @@ lazy val root = (project in file("."))
   .settings(
     name := "tdr-common-utils",
     publish / skip := true
-  ).aggregate(authorisation, objectKeyContext, serviceInputs, statuses)
+  ).aggregate(authorisation, objectKeyContext, records, serviceInputs, statuses)
