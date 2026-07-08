@@ -2,6 +2,11 @@ import sbt.*
 
 object Dependencies {
   private val circeVersion = "0.14.15"
+  private val bouncyCastleVersion = "1.84"
+
+  lazy val bcpkix = "org.bouncycastle" % "bcpkix-jdk18on" % bouncyCastleVersion
+  lazy val bcprov = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
+  lazy val bcutil = "org.bouncycastle" % "bcutil-jdk18on" % bouncyCastleVersion
 
   lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.7.0"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
