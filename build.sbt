@@ -9,6 +9,11 @@ lazy val commonSettings = Seq(
     scalaTest % Test,
     mockito % Test,
   ),
+  dependencyOverrides ++= Seq(
+    bcpkix,
+    bcprov,
+    bcutil,
+  ),
   scalaVersion := "2.13.18",
   version := version.value,
   organization := "uk.gov.nationalarchives",
