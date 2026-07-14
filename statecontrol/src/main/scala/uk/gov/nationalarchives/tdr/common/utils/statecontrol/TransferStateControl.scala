@@ -5,7 +5,7 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{ExportType
 
 object TransferStateControl {
 
-  private def checkChange(stateChange: StateChange, state: List[ConsignmentStatuses]): Either[StateException, Boolean] = {
+  private def checkChange(stateChange: StateChange, state: CurrentState): Either[Exception, ValidStateChange] = {
     stateChange.statusType match {
       case UploadType => UploadState.checkStateChange(stateChange, state)
       case ExportType => ExportState.checkStateChange(stateChange, state)
@@ -23,11 +23,11 @@ object TransferStateControl {
    * Current state of the transfer made up of it's statuses
    *
    * @return
-   * Either true if the state change is permitted or a state exception
+   * Either a state exception or state change valid
    *
    * */
-  def transferStateChangeValid(stateChange: StateChange, currentState: List[ConsignmentStatuses]): Either[StateException, Boolean] = {
-    val stateConsignmentIds = currentState.map(_.consignmentId).toSet
+  def transferStateChangeValid(stateChange: StateChange, currentState: CurrentState): Either[Exception, ValidStateChange] = {
+    val stateConsignmentIds = currentState.statuses.map(_.consignmentId).toSet
     stateConsignmentIds.size match {
       case 0 => checkChange(stateChange, currentState)
       case 1 if stateConsignmentIds.head == stateChange.consignmentId => checkChange(stateChange, currentState)

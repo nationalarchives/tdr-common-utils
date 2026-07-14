@@ -7,11 +7,13 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues.StatusValu
 import java.util.UUID
 
 trait TransferState {
-  def checkStateChange(stateChange: StateChange, state: List[ConsignmentStatuses]): Either[StateException, Boolean]
+  def checkStateChange(stateChange: StateChange, currentState: CurrentState): Either[Exception, ValidStateChange]
 }
 
 case class StateChange(consignmentId: UUID, statusType: StatusType, statusValue: StatusValue)
 
-trait StateException extends Exception
+case class CurrentState(statuses: List[ConsignmentStatuses])
 
-case class StateChangeException(message: String) extends StateException
+case class ValidStateChange()
+
+case class StateChangeException(message: String) extends Exception(message)

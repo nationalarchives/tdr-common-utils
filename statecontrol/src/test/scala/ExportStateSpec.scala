@@ -28,10 +28,10 @@ class ExportStateSpec extends SpecUtils with TableDrivenPropertyChecks {
 
   private def expectedErrorMessage(value: StatusValue) = s"Export state change ${value.value} for $consignmentId not allowed"
 
-  private val exportStatusInputs: TableFor4[StatusValue, List[ConsignmentStatuses], String, Either[StateChangeException, Boolean]] = Table(
+  private val exportStatusInputs: TableFor4[StatusValue, List[ConsignmentStatuses], String, Either[StateChangeException, ValidStateChange]] = Table(
     ("stateChangeStatusValue", "currentState", "currentStateDescription", "expectedResult"),
     //InProgress state change
-    (InProgressValue, setCurrentState(), "all required statuses 'completed'", Right(true)),
+    (InProgressValue, setCurrentState(), "all required statuses 'completed'", Right(ValidStateChange())),
     (InProgressValue, setCurrentState(InProgressValue), "all required statuses are not 'completed'",
       Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
     (InProgressValue, setCurrentState().tail, "missing required statuses",
@@ -56,7 +56,7 @@ class ExportStateSpec extends SpecUtils with TableDrivenPropertyChecks {
     (CompletedValue, setCurrentState().tail, "missing required statuses",
       Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
     (CompletedValue,
-      setCurrentState() :+ setCurrentExportState(InProgressValue), "all required statuses 'completed' and export status 'in progress'", Right(true)),
+      setCurrentState() :+ setCurrentExportState(InProgressValue), "all required statuses 'completed' and export status 'in progress'", Right(ValidStateChange())),
     (CompletedValue,
       setCurrentState() :+ setCurrentExportState(CompletedValue), "all required statuses 'completed' and export status 'completed'",
       Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
@@ -74,7 +74,7 @@ class ExportStateSpec extends SpecUtils with TableDrivenPropertyChecks {
     (CompletedWithIssuesValue, setCurrentState().tail, "missing required statuses",
       Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
     (CompletedWithIssuesValue,
-      setCurrentState() :+ setCurrentExportState(InProgressValue), "all required statuses 'completed' and export status 'in progress'", Right(true)),
+      setCurrentState() :+ setCurrentExportState(InProgressValue), "all required statuses 'completed' and export status 'in progress'", Right(ValidStateChange())),
     (CompletedWithIssuesValue,
       setCurrentState() :+ setCurrentExportState(CompletedValue), "all required statuses 'completed' and export status 'completed'",
       Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
@@ -92,7 +92,7 @@ class ExportStateSpec extends SpecUtils with TableDrivenPropertyChecks {
     (FailedValue, setCurrentState().tail, "missing required statuses",
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
     (FailedValue,
-      setCurrentState() :+ setCurrentExportState(InProgressValue), "all required statuses 'completed' and export status 'in progress'", Right(true)),
+      setCurrentState() :+ setCurrentExportState(InProgressValue), "all required statuses 'completed' and export status 'in progress'", Right(ValidStateChange())),
     (FailedValue,
       setCurrentState() :+ setCurrentExportState(CompletedValue), "all required statuses 'completed' and export status 'completed'",
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
@@ -107,7 +107,7 @@ class ExportStateSpec extends SpecUtils with TableDrivenPropertyChecks {
   forAll(exportStatusInputs) {
     (stateChangeStatusValue, currentState, currentStateDescription, expectedResult) => {
       s"for state change status value: ${stateChangeStatusValue.value} with current state of: $currentStateDescription" should s"return $expectedResult" in {
-        val result = TransferStateControl.transferStateChangeValid(setStateChange(stateChangeStatusValue), currentState)
+        val result = TransferStateControl.transferStateChangeValid(setStateChange(stateChangeStatusValue), CurrentState(currentState))
         result shouldBe expectedResult
       }
     }

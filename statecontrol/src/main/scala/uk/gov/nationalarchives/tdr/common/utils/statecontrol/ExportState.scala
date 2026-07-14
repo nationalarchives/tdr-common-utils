@@ -20,16 +20,17 @@ private object ExportState extends TransferState {
 
   private lazy val requiredStatusIds = requiredStatuses.map(_.id)
 
-  override def checkStateChange(stateChange: StateChange, state: List[ConsignmentStatuses]): Either[StateException, Boolean] = {
-    val requiredStatuses = state.filter(s => requiredStatusIds.contains(s.statusType))
-    val requiredStatusesPresent: Boolean = requiredStatusIds.forall(state.map(_.statusType).contains)
+  override def checkStateChange(stateChange: StateChange, currentState: CurrentState): Either[Exception, ValidStateChange] = {
+    val statuses = currentState.statuses
+    val requiredStatuses = statuses.filter(s => requiredStatusIds.contains(s.statusType))
+    val requiredStatusesPresent: Boolean = requiredStatusIds.forall(statuses.map(_.statusType).contains)
     val requiredStatusesCompleted: Boolean = requiredStatuses.forall(_.value == CompletedValue.value)
-    val exportStatus: Option[ConsignmentStatuses] = state.find(_.statusType == ExportType.id)
+    val exportStatus: Option[ConsignmentStatuses] = statuses.find(_.statusType == ExportType.id)
 
     stateChange.statusValue match {
-      case InProgressValue if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.isEmpty => Right(true)
+      case InProgressValue if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.isEmpty => Right(ValidStateChange())
       case CompletedValue | CompletedWithIssuesValue | FailedValue
-        if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.exists(_.value == InProgressValue.value) => Right(true)
+        if requiredStatusesPresent && requiredStatusesCompleted && exportStatus.exists(_.value == InProgressValue.value) => Right(ValidStateChange())
       case _ => Left(StateChangeException(s"${ExportType.id} state change ${stateChange.statusValue.value} for ${stateChange.consignmentId} not allowed"))
     }
   }
