@@ -16,6 +16,13 @@ class StatusActionsSpec extends AnyWordSpec with MockitoSugar {
       action(ClientChecksumType, InProgressValue) shouldBe None
     }
 
+    "return None for ClientChecksType regardless of reason" in {
+      action(ClientChecksType, SuccessValue) shouldBe None
+      action(ClientChecksType, FailedValue) shouldBe None
+      action(ClientChecksType, InProgressValue) shouldBe None
+      action(ClientChecksType, CompletedValue) shouldBe None
+    }
+
     "return UserFixable with correct message key for FFID failure reasons zero byte and non Judgment " in {
       action(FFIDType, NonJudgmentFormatValue) shouldBe Some(StatusAction(UserFixable, "ffid.nonJudgmentFormat"))
       action(FFIDType, ZeroByteFileValue) shouldBe Some(StatusAction(UserFixable, "ffid.zeroByteFile"))

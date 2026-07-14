@@ -27,6 +27,7 @@ object StatusActions {
       case (_, SuccessValue) => None
       case (_, CompletedValue) => None
       case (_, InProgressValue) => None
+      case (ClientChecksType, _) => None
 
       case (FFIDType, NonJudgmentFormatValue) => statusAction(UserFixable, FFIDType, NonJudgmentFormatValue)
       case (FFIDType, ZeroByteFileValue) => statusAction(UserFixable, FFIDType, ZeroByteFileValue)
