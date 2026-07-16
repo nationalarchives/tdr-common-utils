@@ -7,11 +7,11 @@ import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
 import java.util.UUID
 
-class ExportStateSpec extends SpecUtils with TableDrivenPropertyChecks {
-  private def setCurrentExportState(statusValue: StatusValue) =
-    ConsignmentStatuses(UUID.randomUUID(), consignmentId, ExportType.id, statusValue.value, someDateTime, None)
+class ExportStateSpec extends BaseTestSpec with TableDrivenPropertyChecks {
+  override val statusType: StatusType = ExportType
 
-  private def setStateChange(statusValue: StatusValue) = StateChange(consignmentId, ExportType, statusValue)
+  private def setCurrentExportState(statusValue: StatusValue) =
+    ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, statusValue.value, someDateTime, None)
 
   private def setCurrentState(overrideStatusValue: StatusValue = CompletedValue): List[ConsignmentStatuses] = List(
     ConsignmentStatuses(UUID.randomUUID(), consignmentId, UploadType.id, overrideStatusValue.value, someDateTime, None),
@@ -107,7 +107,8 @@ class ExportStateSpec extends SpecUtils with TableDrivenPropertyChecks {
   forAll(exportStatusInputs) {
     (stateChangeStatusValue, currentState, currentStateDescription, expectedResult) => {
       s"for state change status value: ${stateChangeStatusValue.value} with current state of: $currentStateDescription" should s"return $expectedResult" in {
-        val result = TransferStateControl.transferStateChangeValid(setStateChange(stateChangeStatusValue), CurrentState(currentState))
+        val checker = TransferState.apply(ExportType)
+        val result = checker.checkStateChange(stateChangeStatusValue, CurrentState(consignmentId, currentState))
         result shouldBe expectedResult
       }
     }

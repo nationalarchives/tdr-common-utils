@@ -1,17 +1,18 @@
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor4}
-import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{StatusType, UploadType}
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{ExportType, StatusType, UploadType}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
 import java.util.UUID
 
-class UploadStateSpec extends SpecUtils with TableDrivenPropertyChecks {
-  private def setCurrentState(uploadStatusValue: StatusValue) =
-    List(ConsignmentStatuses(UUID.randomUUID(), consignmentId, UploadType.id, uploadStatusValue.value, someDateTime, None))
+class UploadStateSpec extends BaseTestSpec with TableDrivenPropertyChecks {
+  override val statusType: StatusType = UploadType
 
-  private def setStateChange(statusValue: StatusValue) = StateChange(consignmentId, UploadType, statusValue)
+  private def setCurrentState(uploadStatusValue: StatusValue) =
+    List(ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, uploadStatusValue.value, someDateTime, None))
+
   private def expectedErrorMessage(value: StatusValue) = s"Upload state change ${value.value} for $consignmentId not allowed"
 
   private val uploadStatusInputs: TableFor4[StatusValue, List[ConsignmentStatuses], String, Either[StateChangeException, ValidStateChange]] = Table(
@@ -63,7 +64,8 @@ class UploadStateSpec extends SpecUtils with TableDrivenPropertyChecks {
     (stateChangeValue, currentStatuses, currentStateDescription, expectedResult) =>
     {
       s"for state change: ${stateChangeValue.value} with current state of: $currentStateDescription" should s"return $expectedResult" in {
-        val result = TransferStateControl.transferStateChangeValid(setStateChange(stateChangeValue), CurrentState(currentStatuses))
+        val checker = TransferState.apply(statusType)
+        val result = checker.checkStateChange(stateChangeValue, CurrentState(consignmentId, currentStatuses))
         result shouldBe expectedResult
       }
     }
