@@ -2,8 +2,6 @@ import Dependencies.*
 import sbt.url
 import sbtrelease.ReleaseStateTransformations.*
 
-import java.net.URI
-
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     scalaTest % Test,
@@ -33,7 +31,7 @@ lazy val commonSettings = Seq(
     )
   ),
 
-  licenses := List("MIT" -> URI.create("https://choosealicense.com/licenses/mit/").toURL),
+  licenses := List(sbt.librarymanagement.License.MIT),
   homepage := Some(url("https://github.com/nationalarchives/tdr-common-utils")),
 
   useGpgPinentry := true,
