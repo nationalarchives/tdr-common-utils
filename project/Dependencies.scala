@@ -2,7 +2,7 @@ import sbt.*
 
 object Dependencies {
   private val circeVersion = "0.14.16"
-  private val bouncyCastleVersion = "1.85"
+  private val bouncyCastleVersion = "1.84"
 
   lazy val bcpkix = "org.bouncycastle" % "bcpkix-jdk18on" % bouncyCastleVersion
   lazy val bcprov = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
