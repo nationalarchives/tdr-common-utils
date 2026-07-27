@@ -55,8 +55,9 @@ trait TransferState {
 
 object TransferState {
   def apply(statusType: StatusType): TransferState = statusType match {
-    case ExportType => ExportState
-    case UploadType => UploadState
+    case ExportType              => ExportState
+    case UploadType              => UploadState
+    case DraftMetadataUploadType => DraftMetadataUploadState
     case _ => throw StateChangeException(s"Unsupported status type: ${statusType.id}")
   }
 }
@@ -79,6 +80,10 @@ case object ExportState extends TransferState {
 
 case object UploadState extends TransferState {
   val currentStatusType: StatusType = UploadType
+}
+
+case object DraftMetadataUploadState extends TransferState {
+  val currentStatusType: StatusType = DraftMetadataUploadType
 }
 
 case class StateChange(consignmentId: UUID, statusType: StatusType, statusValue: StatusValue)
