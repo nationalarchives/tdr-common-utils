@@ -2,6 +2,9 @@ name: TDR Deploy Common Utils
 permissions: {}
 on:
   workflow_dispatch:
+concurrency:
+  group: tdr-common-utils-deploy
+  cancel-in-progress: false
 jobs:
   deploy:
     uses: nationalarchives/tdr-github-actions/.github/workflows/sbt_release.yml@2d29c2e83fbaba6554c1e0d8c0b45d2015d610b2 # v0.0.41
