@@ -55,8 +55,9 @@ trait TransferState {
 
 object TransferState {
   def apply(statusType: StatusType): TransferState = statusType match {
-    case ExportType => ExportState
-    case UploadType => UploadState
+    case ExportType              => ExportState
+    case UploadType              => UploadState
+    case DraftMetadataUploadType => DraftMetadataUploadState
     case _ => throw StateChangeException(s"Unsupported status type: ${statusType.id}")
   }
 }
@@ -79,6 +80,27 @@ case object ExportState extends TransferState {
 
 case object UploadState extends TransferState {
   val currentStatusType: StatusType = UploadType
+}
+
+case object DraftMetadataUploadState extends TransferState {
+  val currentStatusType: StatusType = DraftMetadataUploadType
+
+  override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
+    val inProgress = statusValue == InProgressValue
+    val metadataReviewRejected = currentState.statuses
+      .exists(s => s.statusType == MetadataReviewType.id && s.value == CompletedWithIssuesValue.value)
+    val uploadCompleted = currentState.statuses
+      .exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
+    val draftMetadataCompletedWithIssues = currentState.statuses
+      .exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedWithIssuesValue.value)
+    val noMetadataReview = currentState.statuses.forall(_.statusType != MetadataReviewType.id)
+
+    statusValue match {
+      case _ if inProgress && uploadCompleted && metadataReviewRejected => Right(ValidStateChange())
+      case _ if inProgress && uploadCompleted && draftMetadataCompletedWithIssues && noMetadataReview => Right(ValidStateChange())
+      case _ => super.checkStateChange(statusValue, currentState)
+    }
+  }
 }
 
 case class StateChange(consignmentId: UUID, statusType: StatusType, statusValue: StatusValue)
