@@ -90,8 +90,12 @@ case object DraftMetadataUploadState extends TransferState {
       .exists(s => s.statusType == MetadataReviewType.id && s.value == CompletedWithIssuesValue.value)
     val uploadCompleted = currentState.statuses
       .exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
+    val draftMetadataCompletedWithIssues = currentState.statuses
+      .exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedWithIssuesValue.value)
+    val noMetadataReview = currentState.statuses.forall(_.statusType != MetadataReviewType.id)
 
-    if (statusValue == InProgressValue && metadataReviewRejected && uploadCompleted) Right(ValidStateChange())
+    if (statusValue == InProgressValue && uploadCompleted && metadataReviewRejected) Right(ValidStateChange())
+    else if (statusValue == InProgressValue && uploadCompleted && draftMetadataCompletedWithIssues && noMetadataReview) Right(ValidStateChange())
     else super.checkStateChange(statusValue, currentState)
   }
 }

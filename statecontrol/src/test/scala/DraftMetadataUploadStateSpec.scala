@@ -1,7 +1,7 @@
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor4}
-import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataUploadType, MetadataReviewType, StatusType}
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataType, DraftMetadataUploadType, MetadataReviewType, StatusType}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
@@ -17,6 +17,12 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
     List(
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None),
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, MetadataReviewType.id, metadataReviewStatusValue.value, someDateTime, None)
+    )
+
+  private def setCurrentStateWithDraftMetadata(draftMetadataUploadStatusValue: StatusValue, draftMetadataStatusValue: StatusValue) =
+    List(
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None),
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, DraftMetadataType.id, draftMetadataStatusValue.value, someDateTime, None)
     )
 
   private def expectedErrorMessage(value: StatusValue) = s"DraftMetadataUpload state change ${value.value} for $consignmentId not allowed"
@@ -76,6 +82,19 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
     (InProgressValue,
       setCurrentStateWithMetadataReview(InProgressValue, CompletedWithIssuesValue),
       s"draft metadata upload status: ${InProgressValue.value} and metadata review status: ${CompletedWithIssuesValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    //Re-upload after first upload validation failed (DraftMetadata=CompletedWithIssues, no MetadataReview)
+    (InProgressValue,
+      setCurrentStateWithDraftMetadata(CompletedValue, CompletedWithIssuesValue),
+      s"draft metadata upload status: ${CompletedValue.value} and draft metadata status: ${CompletedWithIssuesValue.value}",
+      Right(ValidStateChange())),
+    (InProgressValue,
+      setCurrentStateWithDraftMetadata(CompletedValue, CompletedValue),
+      s"draft metadata upload status: ${CompletedValue.value} and draft metadata status: ${CompletedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    (InProgressValue,
+      setCurrentStateWithDraftMetadata(InProgressValue, CompletedWithIssuesValue),
+      s"draft metadata upload status: ${InProgressValue.value} and draft metadata status: ${CompletedWithIssuesValue.value}",
       Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
   )
 
