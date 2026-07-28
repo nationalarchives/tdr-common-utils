@@ -84,6 +84,16 @@ case object UploadState extends TransferState {
 
 case object DraftMetadataUploadState extends TransferState {
   val currentStatusType: StatusType = DraftMetadataUploadType
+
+  override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
+    val metadataReviewRejected = currentState.statuses
+      .exists(s => s.statusType == MetadataReviewType.id && s.value == CompletedWithIssuesValue.value)
+    val uploadCompleted = currentState.statuses
+      .exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
+
+    if (statusValue == InProgressValue && metadataReviewRejected && uploadCompleted) Right(ValidStateChange())
+    else super.checkStateChange(statusValue, currentState)
+  }
 }
 
 case class StateChange(consignmentId: UUID, statusType: StatusType, statusValue: StatusValue)

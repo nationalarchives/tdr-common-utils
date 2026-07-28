@@ -1,7 +1,7 @@
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor4}
-import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataUploadType, StatusType}
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataUploadType, MetadataReviewType, StatusType}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
@@ -12,6 +12,12 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
 
   private def setCurrentState(draftMetadataUploadStatusValue: StatusValue) =
     List(ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None))
+
+  private def setCurrentStateWithMetadataReview(draftMetadataUploadStatusValue: StatusValue, metadataReviewStatusValue: StatusValue) =
+    List(
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None),
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, MetadataReviewType.id, metadataReviewStatusValue.value, someDateTime, None)
+    )
 
   private def expectedErrorMessage(value: StatusValue) = s"DraftMetadataUpload state change ${value.value} for $consignmentId not allowed"
 
@@ -58,6 +64,19 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
     (FailedValue, setCurrentState(FailedValue), s"draft metadata upload status: ${FailedValue.value}",
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
+    //Re-upload after metadata review rejection
+    (InProgressValue,
+      setCurrentStateWithMetadataReview(CompletedValue, CompletedWithIssuesValue),
+      s"draft metadata upload status: ${CompletedValue.value} and metadata review status: ${CompletedWithIssuesValue.value}",
+      Right(ValidStateChange())),
+    (InProgressValue,
+      setCurrentStateWithMetadataReview(CompletedValue, CompletedValue),
+      s"draft metadata upload status: ${CompletedValue.value} and metadata review status: ${CompletedValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    (InProgressValue,
+      setCurrentStateWithMetadataReview(InProgressValue, CompletedWithIssuesValue),
+      s"draft metadata upload status: ${InProgressValue.value} and metadata review status: ${CompletedWithIssuesValue.value}",
+      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
   )
 
   forAll(draftMetadataUploadStatusInputs) {
