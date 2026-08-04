@@ -1,7 +1,7 @@
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor4}
-import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataType, DraftMetadataUploadType, MetadataReviewType, StatusType}
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataUploadType, ExportType, MetadataReviewType, StatusType}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
@@ -19,27 +19,45 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, MetadataReviewType.id, metadataReviewStatusValue.value, someDateTime, None)
     )
 
-  private def setCurrentStateWithDraftMetadata(draftMetadataUploadStatusValue: StatusValue, draftMetadataStatusValue: StatusValue) =
+  private def setCurrentStateWithExport(draftMetadataUploadStatusValue: StatusValue, exportStatusValue: StatusValue) =
     List(
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None),
-      ConsignmentStatuses(UUID.randomUUID(), consignmentId, DraftMetadataType.id, draftMetadataStatusValue.value, someDateTime, None)
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, ExportType.id, exportStatusValue.value, someDateTime, None)
     )
 
   private def expectedErrorMessage(value: StatusValue) = s"DraftMetadataUpload state change ${value.value} for $consignmentId not allowed"
 
   private val draftMetadataUploadStatusInputs: TableFor4[StatusValue, List[ConsignmentStatuses], String, Either[StateChangeException, ValidStateChange]] = Table(
     ("stateChangeValue", "currentStatuses", "currentStateDescription", "expectedResult"),
-    //InProgress state change
+    //InProgress - allowed unless MetadataReview=InProgress or Export exists
     (InProgressValue, Nil, "no current state", Right(ValidStateChange())),
-    (InProgressValue, setCurrentState(InProgressValue), s"draft metadata upload status: ${InProgressValue.value}",
+    (InProgressValue, setCurrentState(InProgressValue), s"draft metadata upload status: ${InProgressValue.value}", Right(ValidStateChange())),
+    (InProgressValue, setCurrentState(CompletedValue), s"draft metadata upload status: ${CompletedValue.value}", Right(ValidStateChange())),
+    (InProgressValue, setCurrentState(CompletedWithIssuesValue), s"draft metadata upload status: ${CompletedWithIssuesValue.value}", Right(ValidStateChange())),
+    (InProgressValue, setCurrentState(FailedValue), s"draft metadata upload status: ${FailedValue.value}", Right(ValidStateChange())),
+    (InProgressValue,
+      setCurrentStateWithMetadataReview(CompletedValue, CompletedValue),
+      s"draft metadata upload status: ${CompletedValue.value} and metadata review status: ${CompletedValue.value}",
+      Right(ValidStateChange())),
+    (InProgressValue,
+      setCurrentStateWithMetadataReview(CompletedValue, CompletedWithIssuesValue),
+      s"draft metadata upload status: ${CompletedValue.value} and metadata review status: ${CompletedWithIssuesValue.value}",
+      Right(ValidStateChange())),
+    //InProgress - blocked when MetadataReview=InProgress
+    (InProgressValue,
+      setCurrentStateWithMetadataReview(CompletedValue, InProgressValue),
+      s"draft metadata upload status: ${CompletedValue.value} and metadata review status: ${InProgressValue.value}",
       Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
-    (InProgressValue, setCurrentState(CompletedValue), s"draft metadata upload status: ${CompletedValue.value}",
+    //InProgress - blocked when Export exists
+    (InProgressValue,
+      setCurrentStateWithExport(CompletedValue, CompletedValue),
+      s"draft metadata upload status: ${CompletedValue.value} and export status: ${CompletedValue.value}",
       Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
-    (InProgressValue, setCurrentState(CompletedWithIssuesValue), s"draft metadata upload status: ${CompletedWithIssuesValue.value}",
+    (InProgressValue,
+      setCurrentStateWithExport(CompletedValue, InProgressValue),
+      s"draft metadata upload status: ${CompletedValue.value} and export status: ${InProgressValue.value}",
       Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
-    (InProgressValue, setCurrentState(FailedValue), s"draft metadata upload status: ${FailedValue.value}",
-      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
-    //Completed state change
+    //Completed state change - falls through to base logic (requires DraftMetadataUpload=InProgress)
     (CompletedValue, Nil, "no current state", Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
     (CompletedValue, setCurrentState(InProgressValue), s"draft metadata upload status: ${InProgressValue.value}", Right(ValidStateChange())),
     (CompletedValue, setCurrentState(CompletedValue), s"draft metadata upload status: ${CompletedValue.value}",
@@ -48,7 +66,7 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
       Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
     (CompletedValue, setCurrentState(FailedValue), s"draft metadata upload status: ${FailedValue.value}",
       Left(StateChangeException(expectedErrorMessage(CompletedValue)))),
-    //CompletedWithIssues state change
+    //CompletedWithIssues state change - falls through to base logic
     (CompletedWithIssuesValue, Nil, "no current state",
       Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
     (CompletedWithIssuesValue, setCurrentState(InProgressValue), s"draft metadata upload status: ${InProgressValue.value}", Right(ValidStateChange())),
@@ -58,44 +76,16 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
       Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
     (CompletedWithIssuesValue, setCurrentState(FailedValue), s"draft metadata upload status: ${FailedValue.value}",
       Left(StateChangeException(expectedErrorMessage(CompletedWithIssuesValue)))),
-    //Failed state change
+    //Failed state change - falls through to base logic
     (FailedValue, Nil, "no current state",
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
     (FailedValue, setCurrentState(InProgressValue), s"draft metadata upload status: ${InProgressValue.value}", Right(ValidStateChange())),
-    (FailedValue,
-      setCurrentState(CompletedValue), s"draft metadata upload status: ${CompletedValue.value}",
+    (FailedValue, setCurrentState(CompletedValue), s"draft metadata upload status: ${CompletedValue.value}",
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
-    (FailedValue,
-      setCurrentState(CompletedWithIssuesValue), s"draft metadata upload status: ${CompletedWithIssuesValue.value}",
+    (FailedValue, setCurrentState(CompletedWithIssuesValue), s"draft metadata upload status: ${CompletedWithIssuesValue.value}",
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
     (FailedValue, setCurrentState(FailedValue), s"draft metadata upload status: ${FailedValue.value}",
       Left(StateChangeException(expectedErrorMessage(FailedValue)))),
-    //Re-upload after metadata review rejection
-    (InProgressValue,
-      setCurrentStateWithMetadataReview(CompletedValue, CompletedWithIssuesValue),
-      s"draft metadata upload status: ${CompletedValue.value} and metadata review status: ${CompletedWithIssuesValue.value}",
-      Right(ValidStateChange())),
-    (InProgressValue,
-      setCurrentStateWithMetadataReview(CompletedValue, CompletedValue),
-      s"draft metadata upload status: ${CompletedValue.value} and metadata review status: ${CompletedValue.value}",
-      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
-    (InProgressValue,
-      setCurrentStateWithMetadataReview(InProgressValue, CompletedWithIssuesValue),
-      s"draft metadata upload status: ${InProgressValue.value} and metadata review status: ${CompletedWithIssuesValue.value}",
-      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
-    //Re-upload after first upload validation failed (DraftMetadata=CompletedWithIssues, no MetadataReview)
-    (InProgressValue,
-      setCurrentStateWithDraftMetadata(CompletedValue, CompletedWithIssuesValue),
-      s"draft metadata upload status: ${CompletedValue.value} and draft metadata status: ${CompletedWithIssuesValue.value}",
-      Right(ValidStateChange())),
-    (InProgressValue,
-      setCurrentStateWithDraftMetadata(CompletedValue, CompletedValue),
-      s"draft metadata upload status: ${CompletedValue.value} and draft metadata status: ${CompletedValue.value}",
-      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
-    (InProgressValue,
-      setCurrentStateWithDraftMetadata(InProgressValue, CompletedWithIssuesValue),
-      s"draft metadata upload status: ${InProgressValue.value} and draft metadata status: ${CompletedWithIssuesValue.value}",
-      Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
   )
 
   forAll(draftMetadataUploadStatusInputs) {
