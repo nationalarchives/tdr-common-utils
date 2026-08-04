@@ -86,18 +86,17 @@ case object DraftMetadataUploadState extends TransferState {
   val currentStatusType: StatusType = DraftMetadataUploadType
 
   override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
-    val inProgress = statusValue == InProgressValue
-    val metadataReviewRejected = currentState.statuses
-      .exists(s => s.statusType == MetadataReviewType.id && s.value == CompletedWithIssuesValue.value)
-    val uploadCompleted = currentState.statuses
-      .exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
-    val draftMetadataCompletedWithIssues = currentState.statuses
-      .exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedWithIssuesValue.value)
-    val noMetadataReview = currentState.statuses.forall(_.statusType != MetadataReviewType.id)
+    val stateConsignmentIds = currentState.statuses.map(_.consignmentId).toSet
+    val consignmentIdsMatch = stateConsignmentIds.isEmpty ||
+      (stateConsignmentIds.size == 1 && stateConsignmentIds.head == currentState.consignmentId)
+
+    val metadataUnderReview = currentState.statuses
+      .exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
+    val exported = currentState.statuses
+      .exists(_.statusType == ExportType.id)
 
     statusValue match {
-      case _ if inProgress && uploadCompleted && metadataReviewRejected => Right(ValidStateChange())
-      case _ if inProgress && uploadCompleted && draftMetadataCompletedWithIssues && noMetadataReview => Right(ValidStateChange())
+      case InProgressValue if consignmentIdsMatch && !metadataUnderReview && !exported => Right(ValidStateChange())
       case _ => super.checkStateChange(statusValue, currentState)
     }
   }
