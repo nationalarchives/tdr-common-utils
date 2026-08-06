@@ -1,7 +1,7 @@
 import graphql.codegen.GetConsignmentStatus.getConsignmentStatus.GetConsignment.ConsignmentStatuses
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor4}
-import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataUploadType, ExportType, MetadataReviewType, StatusType}
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes.{DraftMetadataType, DraftMetadataUploadType, ExportType, MetadataReviewType, StatusType}
 import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 import uk.gov.nationalarchives.tdr.common.utils.statecontrol._
 
@@ -11,16 +11,21 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
   override val statusType: StatusType = DraftMetadataUploadType
 
   private def setCurrentState(draftMetadataUploadStatusValue: StatusValue) =
-    List(ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None))
+    List(
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, DraftMetadataType.id, InProgressValue.value, someDateTime, None),
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None)
+    )
 
   private def setCurrentStateWithMetadataReview(draftMetadataUploadStatusValue: StatusValue, metadataReviewStatusValue: StatusValue) =
     List(
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, DraftMetadataType.id, InProgressValue.value, someDateTime, None),
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None),
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, MetadataReviewType.id, metadataReviewStatusValue.value, someDateTime, None)
     )
 
   private def setCurrentStateWithExport(draftMetadataUploadStatusValue: StatusValue, exportStatusValue: StatusValue) =
     List(
+      ConsignmentStatuses(UUID.randomUUID(), consignmentId, DraftMetadataType.id, InProgressValue.value, someDateTime, None),
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, statusType.id, draftMetadataUploadStatusValue.value, someDateTime, None),
       ConsignmentStatuses(UUID.randomUUID(), consignmentId, ExportType.id, exportStatusValue.value, someDateTime, None)
     )
@@ -29,8 +34,10 @@ class DraftMetadataUploadStateSpec extends BaseTestSpec with TableDrivenProperty
 
   private val draftMetadataUploadStatusInputs: TableFor4[StatusValue, List[ConsignmentStatuses], String, Either[StateChangeException, ValidStateChange]] = Table(
     ("stateChangeValue", "currentStatuses", "currentStateDescription", "expectedResult"),
-    //InProgress - allowed unless MetadataReview=InProgress or Export exists
-    (InProgressValue, Nil, "no current state", Right(ValidStateChange())),
+    //InProgress - allowed unless MetadataReview=InProgress or Export exists, and DraftMetadata exists
+    (InProgressValue, Nil, "no current state", Left(StateChangeException(expectedErrorMessage(InProgressValue)))),
+    (InProgressValue, List(ConsignmentStatuses(UUID.randomUUID(), consignmentId, DraftMetadataType.id, InProgressValue.value, someDateTime, None)),
+      s"draft metadata status: ${InProgressValue.value}", Right(ValidStateChange())),
     (InProgressValue, setCurrentState(InProgressValue), s"draft metadata upload status: ${InProgressValue.value}", Right(ValidStateChange())),
     (InProgressValue, setCurrentState(CompletedValue), s"draft metadata upload status: ${CompletedValue.value}", Right(ValidStateChange())),
     (InProgressValue, setCurrentState(CompletedWithIssuesValue), s"draft metadata upload status: ${CompletedWithIssuesValue.value}", Right(ValidStateChange())),

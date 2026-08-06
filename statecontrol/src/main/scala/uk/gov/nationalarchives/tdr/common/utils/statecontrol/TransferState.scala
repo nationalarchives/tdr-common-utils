@@ -58,6 +58,7 @@ object TransferState {
     case ExportType              => ExportState
     case UploadType              => UploadState
     case DraftMetadataUploadType => DraftMetadataUploadState
+    case MetadataReviewType      => MetadataReviewState
     case _ => throw StateChangeException(s"Unsupported status type: ${statusType.id}")
   }
 }
@@ -86,17 +87,33 @@ case object DraftMetadataUploadState extends TransferState {
   val currentStatusType: StatusType = DraftMetadataUploadType
 
   override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
-    val stateConsignmentIds = currentState.statuses.map(_.consignmentId).toSet
-    val consignmentIdsMatch = stateConsignmentIds.isEmpty ||
-      (stateConsignmentIds.size == 1 && stateConsignmentIds.head == currentState.consignmentId)
-
     val metadataUnderReview = currentState.statuses
       .exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
     val exported = currentState.statuses
       .exists(_.statusType == ExportType.id)
+    val draftMetadataStarted = currentState.statuses
+      .exists(_.statusType == DraftMetadataType.id)
 
     statusValue match {
-      case InProgressValue if consignmentIdsMatch && !metadataUnderReview && !exported => Right(ValidStateChange())
+      case InProgressValue if draftMetadataStarted && !metadataUnderReview && !exported => Right(ValidStateChange())
+      case InProgressValue =>
+        Left(StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for ${currentState.consignmentId} not allowed"))
+      case _ => super.checkStateChange(statusValue, currentState)
+    }
+  }
+}
+
+case object MetadataReviewState extends TransferState {
+  val currentStatusType: StatusType = MetadataReviewType
+  override val requiredStatuses: Set[StatusType] = Set(DraftMetadataType, DraftMetadataUploadType)
+
+  override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
+    val prerequisitesCompleted = currentState.statuses.exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedValue.value) &&
+      currentState.statuses.exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
+    val reviewAlreadyInProgress = currentState.statuses.exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
+
+    statusValue match {
+      case InProgressValue if prerequisitesCompleted && !reviewAlreadyInProgress => Right(ValidStateChange())
       case _ => super.checkStateChange(statusValue, currentState)
     }
   }
