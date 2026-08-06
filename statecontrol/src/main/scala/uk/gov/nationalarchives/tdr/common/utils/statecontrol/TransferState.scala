@@ -10,16 +10,16 @@ trait TransferState {
   val currentStatusType: StatusType
   val requiredStatuses: Set[StatusType] = Set.empty[StatusType]
 
-  private def checkTransferIds(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
+  protected def validateTransferIds(currentState: CurrentState): Either[StateChangeException, Unit] = {
     val stateConsignmentIds = currentState.statuses.map(_.consignmentId).toSet
     stateConsignmentIds.size match {
-      case 0 => checkChange(statusValue, currentState)
-      case 1 if stateConsignmentIds.head == currentState.consignmentId => checkChange(statusValue, currentState)
+      case 0 => Right(())
+      case 1 if stateConsignmentIds.head == currentState.consignmentId => Right(())
       case _ => Left(StateChangeException("Request contains mismatched consignment ids"))
     }
   }
 
-  private def checkChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
+  protected def checkChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
     val requiredStatusIds = requiredStatuses.map(_.id)
 
     val requiredStatusesPresent = requiredStatusIds.forall(id => currentState.statuses.exists(_.statusType == id))
@@ -40,25 +40,23 @@ trait TransferState {
    *
    * @param statusValue
    * Change of status value to check
-   *
    * @param currentState
    * Current state of the transfer made up of it's statuses
-   *
    * @return
    * Either a state exception or state change valid
    *
    * */
   def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
-    checkTransferIds(statusValue, currentState)
+    validateTransferIds(currentState).flatMap(_ => checkChange(statusValue, currentState))
   }
 }
 
 object TransferState {
   def apply(statusType: StatusType): TransferState = statusType match {
-    case ExportType              => ExportState
-    case UploadType              => UploadState
+    case ExportType => ExportState
+    case UploadType => UploadState
     case DraftMetadataUploadType => DraftMetadataUploadState
-    case MetadataReviewType      => MetadataReviewState
+    case MetadataReviewType => MetadataReviewState
     case _ => throw StateChangeException(s"Unsupported status type: ${statusType.id}")
   }
 }
@@ -87,18 +85,20 @@ case object DraftMetadataUploadState extends TransferState {
   val currentStatusType: StatusType = DraftMetadataUploadType
 
   override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
-    val metadataUnderReview = currentState.statuses
-      .exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
-    val exported = currentState.statuses
-      .exists(_.statusType == ExportType.id)
-    val draftMetadataStarted = currentState.statuses
-      .exists(_.statusType == DraftMetadataType.id)
+    validateTransferIds(currentState).flatMap { _ =>
+      val metadataUnderReview = currentState.statuses
+        .exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
+      val exported = currentState.statuses
+        .exists(_.statusType == ExportType.id)
+      val draftMetadataStarted = currentState.statuses
+        .exists(_.statusType == DraftMetadataType.id)
 
-    statusValue match {
-      case InProgressValue if draftMetadataStarted && !metadataUnderReview && !exported => Right(ValidStateChange())
-      case InProgressValue =>
-        Left(StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for ${currentState.consignmentId} not allowed"))
-      case _ => super.checkStateChange(statusValue, currentState)
+      statusValue match {
+        case InProgressValue if draftMetadataStarted && !metadataUnderReview && !exported => Right(ValidStateChange())
+        case InProgressValue =>
+          Left(StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for ${currentState.consignmentId} not allowed"))
+        case _ => checkChange(statusValue, currentState)
+      }
     }
   }
 }
@@ -108,13 +108,17 @@ case object MetadataReviewState extends TransferState {
   override val requiredStatuses: Set[StatusType] = Set(DraftMetadataType, DraftMetadataUploadType)
 
   override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
-    val prerequisitesCompleted = currentState.statuses.exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedValue.value) &&
-      currentState.statuses.exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
-    val reviewAlreadyInProgress = currentState.statuses.exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
+    validateTransferIds(currentState).flatMap { _ =>
+      val prerequisitesCompleted = currentState.statuses.exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedValue.value) &&
+        currentState.statuses.exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
+      val reviewAlreadyInProgress = currentState.statuses.exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
+      val exportExists = currentState.statuses.exists(_.statusType == ExportType.id)
 
-    statusValue match {
-      case InProgressValue if prerequisitesCompleted && !reviewAlreadyInProgress => Right(ValidStateChange())
-      case _ => super.checkStateChange(statusValue, currentState)
+      statusValue match {
+        case InProgressValue if exportExists => Left(StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for ${currentState.consignmentId} not allowed"))
+        case InProgressValue if prerequisitesCompleted && !reviewAlreadyInProgress && !exportExists => Right(ValidStateChange())
+        case _ => checkChange(statusValue, currentState)
+      }
     }
   }
 }
