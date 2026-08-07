@@ -19,6 +19,15 @@ trait TransferState {
     }
   }
 
+  protected def metadataUnderReview(currentState: CurrentState): Boolean = {
+    currentState.statuses
+      .exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
+  }
+
+  protected def stateChangeNotAllowedException(consignmentId: UUID, statusValue: StatusValue): StateChangeException = {
+    StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for $consignmentId not allowed")
+  }
+
   protected def checkChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
     val requiredStatusIds = requiredStatuses.map(_.id)
 
@@ -31,7 +40,7 @@ trait TransferState {
       case InProgressValue if requiredStatusesPresent && requiredStatusesCompleted && currentStatus.isEmpty => Right(ValidStateChange())
       case CompletedValue | CompletedWithIssuesValue | FailedValue
         if requiredStatusesPresent && requiredStatusesCompleted && currentStatus.exists(_.value == InProgressValue.value) => Right(ValidStateChange())
-      case _ => Left(StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for ${currentState.consignmentId} not allowed"))
+      case _ => Left(stateChangeNotAllowedException(currentState.consignmentId, statusValue))
     }
   }
 
@@ -86,17 +95,14 @@ case object DraftMetadataUploadState extends TransferState {
 
   override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
     validateTransferIds(currentState).flatMap { _ =>
-      val metadataUnderReview = currentState.statuses
-        .exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
       val exported = currentState.statuses
         .exists(_.statusType == ExportType.id)
       val draftMetadataStarted = currentState.statuses
         .exists(_.statusType == DraftMetadataType.id)
 
       statusValue match {
-        case InProgressValue if draftMetadataStarted && !metadataUnderReview && !exported => Right(ValidStateChange())
-        case InProgressValue =>
-          Left(StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for ${currentState.consignmentId} not allowed"))
+        case InProgressValue if draftMetadataStarted && !metadataUnderReview(currentState) && !exported => Right(ValidStateChange())
+        case InProgressValue => Left(stateChangeNotAllowedException(currentState.consignmentId, statusValue))
         case _ => checkChange(statusValue, currentState)
       }
     }
@@ -111,12 +117,11 @@ case object MetadataReviewState extends TransferState {
     validateTransferIds(currentState).flatMap { _ =>
       val prerequisitesCompleted = currentState.statuses.exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedValue.value) &&
         currentState.statuses.exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
-      val reviewAlreadyInProgress = currentState.statuses.exists(s => s.statusType == MetadataReviewType.id && s.value == InProgressValue.value)
       val exportExists = currentState.statuses.exists(_.statusType == ExportType.id)
 
       statusValue match {
-        case InProgressValue if exportExists => Left(StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for ${currentState.consignmentId} not allowed"))
-        case InProgressValue if prerequisitesCompleted && !reviewAlreadyInProgress && !exportExists => Right(ValidStateChange())
+        case InProgressValue if exportExists => Left(stateChangeNotAllowedException(currentState.consignmentId, statusValue))
+        case InProgressValue if prerequisitesCompleted && !metadataUnderReview(currentState) && !exportExists => Right(ValidStateChange())
         case _ => checkChange(statusValue, currentState)
       }
     }
