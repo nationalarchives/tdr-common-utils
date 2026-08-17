@@ -11,7 +11,7 @@ object Inputs {
   implicit val exportInputEncoder: Encoder[ExportInput] = deriveEncoder[ExportInput]
   implicit val metadataValidationInputEncoder: Encoder[MetadataValidationInput] = deriveEncoder[MetadataValidationInput]
 
-  case class BackendChecksInput(consignmentId: String, s3SourceBucketPrefix: String) extends StepFunctionInput
+  case class BackendChecksInput(consignmentId: String, s3SourceBucketPrefix: Option[String] = None) extends StepFunctionInput
   case class ExportInput(consignmentId: String) extends StepFunctionInput
   case class MetadataValidationInput(consignmentId: String, fileName: String) extends StepFunctionInput
 }
