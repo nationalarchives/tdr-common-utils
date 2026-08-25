@@ -63,7 +63,7 @@ Defines the status types and values used throughout the TDR workflow.
 
 **Status values:** `AmbiguousOriginalFile`, `Completed`, `CompletedWithIssues`, `DuplicateFileName`, `Failed`, `InProgress`, `Mismatch`, `MultipleFormats`, `NoOriginalFile`, `NonJudgmentFormat`, `Success`, `VirusDetected`, `ZeroByteFile`
 
-`StatusValues.NoOriginalFileValue` also exposes `noOriginalFileMessage` = `"No Original Found"` for consumers that need the shared display text for this status.
+`StatusValues.NoOriginalFileValue` also exposes `displayMessage` = `"No Original Found"` for consumers that need the shared display text for this status.
 
 Unrecognised strings are wrapped in `CustomValue(reason)` to support dynamic values (e.g. disallowed PUID reasons from the [da-metadata-schema](https://github.com/nationalarchives/da-metadata-schema) repository).
 
