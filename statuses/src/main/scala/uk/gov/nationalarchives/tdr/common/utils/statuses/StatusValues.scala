@@ -67,7 +67,7 @@ object StatusValues {
 
   case object NoOriginalFileValue extends StatusValue {
     val value: String = "NoOriginalFile"
-    val noOriginalFileMessage: String = "No Original Found"
+    val displayMessage: String ="No Original Found"
   }
 
   case object AmbiguousOriginalFileValue extends StatusValue {
