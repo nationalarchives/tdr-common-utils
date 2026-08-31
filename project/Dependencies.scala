@@ -8,7 +8,7 @@ object Dependencies {
   lazy val bcprov = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
   lazy val bcutil = "org.bouncycastle" % "bcutil-jdk18on" % bouncyCastleVersion
 
-  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.7.0"
+  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.7.1"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
 
