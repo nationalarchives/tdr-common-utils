@@ -29,6 +29,7 @@ class MetadataReviewStateSpec extends BaseTestSpec with TableDrivenPropertyCheck
   private val metadataReviewStatusInputs: TableFor4[StatusValue, List[ConsignmentStatuses], String, Either[StateChangeException, ValidStateChange]] = Table(
     ("stateChangeValue", "currentStatuses", "currentStateDescription", "expectedResult"),
     (InProgressValue, prerequisitesOnly(), "prerequisites completed and no current metadata review status", Right(ValidStateChange())),
+    (InProgressValue, prerequisitesOnly(draftMetadataStatus = SkippedValue), "draft metadata skipped and draft metadata upload completed", Right(ValidStateChange())),
     (InProgressValue, withMetadataReview(CompletedValue), "prerequisites completed and metadata review completed", Right(ValidStateChange())),
     (InProgressValue, withMetadataReview(CompletedWithIssuesValue), "prerequisites completed and metadata review completed with issues", Right(ValidStateChange())),
     (InProgressValue, withMetadataReview(FailedValue), "prerequisites completed and metadata review failed", Right(ValidStateChange())),
