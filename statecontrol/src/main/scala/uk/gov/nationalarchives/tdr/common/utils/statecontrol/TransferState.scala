@@ -28,18 +28,34 @@ trait TransferState {
     StateChangeException(s"${currentStatusType.id} state change ${statusValue.value} for $consignmentId not allowed")
   }
 
+  protected def requiredStatusesPresent(currentState: CurrentState): Boolean = {
+    requiredStatuses.map(_.id).forall(id => currentState.statuses.exists(_.statusType == id))
+  }
+
+  protected def requiredStatusesCompleted(currentState: CurrentState): Boolean = {
+    requiredStatuses.map(_.id).forall(id => currentState.statuses.exists(s => s.statusType == id && s.value == CompletedValue.value))
+  }
+
+  protected def currentStatus(currentState: CurrentState): Option[ConsignmentStatuses] = {
+    currentState.statuses.find(_.statusType == currentStatusType.id)
+  }
+
+  protected def canStartState(currentState: CurrentState): Boolean = {
+    requiredStatusesPresent(currentState) &&
+      requiredStatusesCompleted(currentState) &&
+      currentStatus(currentState).isEmpty
+  }
+
+  protected def canCompleteState(currentState: CurrentState): Boolean = {
+    requiredStatusesPresent(currentState) &&
+      requiredStatusesCompleted(currentState) &&
+      currentStatus(currentState).exists(_.value == InProgressValue.value)
+  }
+
   protected def checkChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
-    val requiredStatusIds = requiredStatuses.map(_.id)
-
-    val requiredStatusesPresent = requiredStatusIds.forall(id => currentState.statuses.exists(_.statusType == id))
-    val requiredStatusesCompleted = requiredStatusIds.forall(id => currentState.statuses.exists(s => s.statusType == id && s.value == CompletedValue.value))
-
-    val currentStatus: Option[ConsignmentStatuses] = currentState.statuses.find(_.statusType == currentStatusType.id)
-
     statusValue match {
-      case InProgressValue if requiredStatusesPresent && requiredStatusesCompleted && currentStatus.isEmpty => Right(ValidStateChange())
-      case CompletedValue | CompletedWithIssuesValue | FailedValue
-        if requiredStatusesPresent && requiredStatusesCompleted && currentStatus.exists(_.value == InProgressValue.value) => Right(ValidStateChange())
+      case InProgressValue if canStartState(currentState) => Right(ValidStateChange())
+      case CompletedValue | CompletedWithIssuesValue | FailedValue if canCompleteState(currentState) => Right(ValidStateChange())
       case _ => Left(stateChangeNotAllowedException(currentState.consignmentId, statusValue))
     }
   }
@@ -95,13 +111,13 @@ case object DraftMetadataUploadState extends TransferState {
 
   override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
     validateTransferIds(currentState).flatMap { _ =>
-      val exported = currentState.statuses
-        .exists(_.statusType == ExportType.id)
-      val draftMetadataStarted = currentState.statuses
-        .exists(_.statusType == DraftMetadataType.id)
+      val exportExists = currentState.statuses.exists(_.statusType == ExportType.id)
+      val draftMetadataStarted = currentState.statuses.exists(_.statusType == DraftMetadataType.id)
+      val metadataReviewInProgress = metadataUnderReview(currentState)
+      val canStartDraftMetadataUpload = draftMetadataStarted && !metadataReviewInProgress && !exportExists
 
       statusValue match {
-        case InProgressValue if draftMetadataStarted && !metadataUnderReview(currentState) && !exported => Right(ValidStateChange())
+        case InProgressValue if canStartDraftMetadataUpload => Right(ValidStateChange())
         case InProgressValue => Left(stateChangeNotAllowedException(currentState.consignmentId, statusValue))
         case _ => checkChange(statusValue, currentState)
       }
@@ -115,20 +131,27 @@ case object MetadataReviewState extends TransferState {
 
   override def checkStateChange(statusValue: StatusValue, currentState: CurrentState): Either[StateChangeException, ValidStateChange] = {
     validateTransferIds(currentState).flatMap { _ =>
-      val prerequisitesCompleted = currentState.statuses.exists(s => s.statusType == DraftMetadataType.id && s.value == CompletedValue.value) &&
-        currentState.statuses.exists(s => s.statusType == DraftMetadataUploadType.id && s.value == CompletedValue.value)
+      val draftMetadataUploadCompleted = currentState.statuses
+        .find(_.statusType == DraftMetadataUploadType.id)
+        .forall(_.value == CompletedValue.value)
+      val draftMetadataCompleted = currentState.statuses.exists(s => s.statusType == DraftMetadataType.id && (s.value == CompletedValue.value || s.value == SkippedValue.value))
+
+      val prerequisitesCompleted = draftMetadataCompleted && draftMetadataUploadCompleted
+
       val exportExists = currentState.statuses.exists(_.statusType == ExportType.id)
+
+      val metadataReviewInProgress = metadataUnderReview(currentState)
+      val canStartMetadataReview = prerequisitesCompleted && !metadataReviewInProgress && !exportExists
 
       statusValue match {
         case InProgressValue if exportExists => Left(stateChangeNotAllowedException(currentState.consignmentId, statusValue))
-        case InProgressValue if prerequisitesCompleted && !metadataUnderReview(currentState) && !exportExists => Right(ValidStateChange())
+        case InProgressValue if canStartMetadataReview => Right(ValidStateChange())
         case _ => checkChange(statusValue, currentState)
       }
     }
   }
 }
 
-case class StateChange(consignmentId: UUID, statusType: StatusType, statusValue: StatusValue)
 
 case class CurrentState(consignmentId: UUID, statuses: List[ConsignmentStatuses])
 
