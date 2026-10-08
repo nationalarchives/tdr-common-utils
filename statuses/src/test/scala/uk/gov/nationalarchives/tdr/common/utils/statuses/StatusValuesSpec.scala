@@ -8,7 +8,7 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
   "StatusValues" should {
     "have the correct value" in {
-      NoOriginalFileValue.displayMessage should equal("No Original Found")
+      NoOriginalFileValue.value should equal("No Original Found")
       CompletedValue.value should equal("Completed")
       CompletedWithIssuesValue.value should equal("CompletedWithIssues")
       FailedValue.value should equal("Failed")
@@ -19,7 +19,6 @@ class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
       MismatchValue.value should equal("Mismatch")
       ZeroByteFileValue.value should equal("ZeroByteFile")
       MultipleFormatsValue.value should equal("MultipleFormats")
-      NoOriginalFileValue.value should equal("NoOriginalFile")
       AmbiguousOriginalFileValue.value should equal("AmbiguousOriginalFile")
       DuplicateFileNameValue.value should equal("DuplicateFileName")
       SkippedValue.value should equal("Skipped")
@@ -38,7 +37,7 @@ class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
       StatusValue.apply("Mismatch") shouldBe MismatchValue
       StatusValue.apply("ZeroByteFile") shouldBe ZeroByteFileValue
       StatusValue.apply("MultipleFormats") shouldBe MultipleFormatsValue
-      StatusValue.apply("NoOriginalFile") shouldBe NoOriginalFileValue
+      StatusValue.apply("No Original Found") shouldBe NoOriginalFileValue
       StatusValue.apply("AmbiguousOriginalFile") shouldBe AmbiguousOriginalFileValue
       StatusValue.apply("DuplicateFileName") shouldBe DuplicateFileNameValue
       StatusValue.apply("Skipped") shouldBe SkippedValue
