@@ -69,6 +69,19 @@ Unrecognised strings are wrapped in `CustomValue(reason)` to support dynamic val
 
 **Status scopes:** `File`, `Consignment`
 
+`StatusTypes` exposes the status types that are valid at each scope:
+
+```scala
+import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusTypes._
+
+fileStatusTypes        // Antivirus, ChecksumMatch, ClientChecks, FFID, Redaction, ServerChecksum, Upload
+consignmentStatusTypes // ClientChecks, ConfirmTransfer, DraftMetadata, DraftMetadataUpload, Export, MetadataReview,
+                       // Series, ServerAntivirus, ServerChecksum, ServerFFID, ServerRedaction, TransferAgreement, Upload
+```
+
+`Upload`, `ClientChecks` and `ServerChecksum` are valid at both levels and so appear in both sets. The `Server*` types are
+consignment level only: they are the consignment wide roll ups of the per file checks.
+
 **Status actions:** `UserFixable`, `TNASupport`
 
 The `StatusActions` object maps a `(StatusType, StatusValue)` pair to an optional `StatusAction` containing the action type and a message key for use with `message.properties`:
