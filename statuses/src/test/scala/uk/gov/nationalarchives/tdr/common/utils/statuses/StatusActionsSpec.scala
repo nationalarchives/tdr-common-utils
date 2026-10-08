@@ -77,7 +77,7 @@ class StatusActionsSpec extends AnyWordSpec with MockitoSugar {
     }
 
     "return UserFixable for redaction failures with specific message keys" in {
-      action(RedactionType, NoOriginalFileValue) shouldBe Some(StatusAction(UserFixable, "redaction.noOriginalFile"))
+      action(RedactionType, NoOriginalFileValue) shouldBe Some(StatusAction(UserFixable, "redaction.noOriginalFound"))
       action(RedactionType, AmbiguousOriginalFileValue) shouldBe Some(StatusAction(UserFixable, "redaction.ambiguousOriginalFile"))
       action(RedactionType, DuplicateFileNameValue) shouldBe Some(StatusAction(UserFixable, "redaction.duplicateFileName"))
     }
