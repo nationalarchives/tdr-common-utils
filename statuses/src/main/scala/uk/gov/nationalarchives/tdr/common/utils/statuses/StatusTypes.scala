@@ -121,6 +121,38 @@ object StatusTypes {
     val fileCheckStatus: Boolean = false
   }
 
+  /** Status types that may be recorded against an individual file.
+    *
+    * Some types are valid at both file and consignment level, so they appear in both this set and [[consignmentStatusTypes]].
+    *
+    * Note: `ClientFilePathType` is deliberately excluded. File rows of this type are written and queried for file check failure
+    * reporting, but have never been exposed as a file status, so including it here would change API behaviour.
+    */
+  val fileStatusTypes: Set[StatusType] =
+    Set(AntivirusType, ChecksumMatchType, ClientChecksType, FFIDType, RedactionType, ServerChecksumType, UploadType)
+
+  /** Status types that may be recorded against a consignment.
+    *
+    * Some types are valid at both file and consignment level, so they appear in both this set and [[fileStatusTypes]]. The
+    * `Server*` types are consignment level only: they are the consignment wide roll ups of the per file checks.
+    */
+  val consignmentStatusTypes: Set[StatusType] =
+    Set(
+      ClientChecksType,
+      ConfirmTransferType,
+      DraftMetadataType,
+      DraftMetadataUploadType,
+      ExportType,
+      MetadataReviewType,
+      SeriesType,
+      ServerAntivirusType,
+      ServerChecksumType,
+      ServerFFIDType,
+      ServerRedactionType,
+      TransferAgreementType,
+      UploadType
+    )
+
   def toStatusType(statusType: String): StatusType = {
     statusType match {
       case AntivirusType.id           => AntivirusType
