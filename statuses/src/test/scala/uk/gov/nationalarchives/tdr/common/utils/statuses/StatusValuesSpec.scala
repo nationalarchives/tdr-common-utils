@@ -8,6 +8,7 @@ import uk.gov.nationalarchives.tdr.common.utils.statuses.StatusValues._
 class StatusValuesSpec  extends AnyWordSpec with MockitoSugar {
   "StatusValues" should {
     "have the correct value" in {
+      NoOriginalFileValue.displayMessage should equal("No Original Found")
       CompletedValue.value should equal("Completed")
       CompletedWithIssuesValue.value should equal("CompletedWithIssues")
       FailedValue.value should equal("Failed")
