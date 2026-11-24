@@ -117,4 +117,53 @@ class StatusTypesSpec extends AnyWordSpec with MockitoSugar {
 
     exception.getMessage should equal("Invalid status type: someRandomValue")
   }
+
+  "fileStatusTypes" should {
+    "contain the status types that can be recorded against a file" in {
+      fileStatusTypes.map(_.id) should equal(
+        Set("Antivirus", "ChecksumMatch", "ClientChecks", "FFID", "Redaction", "ServerChecksum", "Upload")
+      )
+    }
+
+    "not contain ClientFilePath, which is not exposed as a file status" in {
+      fileStatusTypes should not contain ClientFilePathType
+    }
+  }
+
+  "consignmentStatusTypes" should {
+    "contain the status types that can be recorded against a consignment" in {
+      consignmentStatusTypes.map(_.id) should equal(
+        Set(
+          "ClientChecks",
+          "ConfirmTransfer",
+          "DraftMetadata",
+          "DraftMetadataUpload",
+          "Export",
+          "MetadataReview",
+          "Series",
+          "ServerAntivirus",
+          "ServerChecksum",
+          "ServerFFID",
+          "ServerRedaction",
+          "TransferAgreement",
+          "Upload"
+        )
+      )
+    }
+
+    "contain only consignment level roll ups for the Server status types" in {
+      Set(ServerAntivirusType, ServerChecksumType, ServerFFIDType, ServerRedactionType).foreach { statusType =>
+        consignmentStatusTypes should contain(statusType)
+      }
+      Set(ServerAntivirusType, ServerFFIDType, ServerRedactionType).foreach { statusType =>
+        fileStatusTypes should not contain statusType
+      }
+    }
+  }
+
+  "fileStatusTypes and consignmentStatusTypes" should {
+    "overlap only for the status types that are valid at both levels" in {
+      fileStatusTypes.intersect(consignmentStatusTypes) should equal(Set(ClientChecksType, ServerChecksumType, UploadType))
+    }
+  }
 }
